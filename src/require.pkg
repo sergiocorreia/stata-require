@@ -1,0 +1,18 @@
+v 3
+
+d REQUIRE: ensure that a package is installed; also ensure minimum version
+d
+d Author:
+d Sergio Correia. Board of Governors of the Federal Reserve System
+d
+d For more information, see https://github.com/sergiocorreia/stata-require
+d
+d KW: reproductible-research
+d
+d Requires: Stata version 12.1
+d
+d Distribution-Date: 20210711
+d
+
+f require.ado
+f require.sthlp

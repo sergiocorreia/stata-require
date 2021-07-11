@@ -1,0 +1,495 @@
+package	weight	version	date
+distinct	127946	1.2.1	01mar2012
+labutil	120287		
+asgen	118958	2.0.0	29jul2020
+outreg2	75316	2.3.2	17aug2014
+estout	57034	3.24.0	30apr2021
+asdoc	36353		
+winsor2	34843	1.1.0	16dec2014
+logout	17642	1.0.4	05nov2009
+reghdfe	14805	5.7.3	13nov2019
+psmatch2	13360	4.0.12	30jan2016
+ivreg2	13323	4.1.11	22nov2019
+winsor	12678	1.3.0	20feb2002
+ftools	12597	2.37.0	16aug2019
+filelist	12571	2.0.7	08jun2015
+coefplot	11601	1.8.4	17dec2020
+fre	9455		
+ranktest	8870	2.0.4	21sep2020
+unique	8130	1.2.4	17jun2020
+mdesc	7212	2.1.0	25aug2011
+kountry	7096	2.1.6	12aug2013
+diff	6547	5.0.1	
+spmap	5871	1.3.2	09jan2018
+xtabond2	5734	3.7.0	22nov2020
+center	5573	1.10.0	13apr2017
+xttest3	5555		
+xtoverid	5100	2.1.8	04jan2016
+_gwtmean	4951		
+tscollap	4880		
+shp2dta	4816	1.0.9	15jul2015
+tableplot	4652	1.0.7	22jan2007
+binscatter	4650	7.2	24nov2013
+reg2docx	4445		
+missings	4380	1.1.1	11may2017
+outreg	4334	4.32.0	18sep2015
+bcuse	4320		
+tabout	4255	2.0.8	15mar2019
+synth	4223	0.0.7	26an2014
+metan	4156	4.3.0	28apr2021
+xtivreg2	4094	1.0.17	19feb2015
+asreg	3981	4.5.0	17feb2021
+gtools	3884	1.5.1	24mar2019
+carryforward	3804	4.5.0	15jan2016
+rangestat	3620	1.1.1	09may2017
+fs	3362		
+catplot	3279	2.0.2	10dec2010
+ereplace	3268		
+xtbalance	3233		
+corr2docx	3212		
+geodist	3174	1.1.0	18jun2019
+factortest	2863		
+dataex	2856		
+xtcsd	2640		
+ivreghdfe	2632	1.0.0	07jul2018
+palettes	2410		
+nmissing	2228		
+ppmlhdfe	2117	2.2.0	02aug2019
+overid	2114	3.0.0	25jun2020
+mif2dta	2104		
+asrol	2098	5.5.0	25jun2021
+avar	2091	1.0.7	28jul2015
+lianxh	2001		
+jb	1958		
+xtscc	1901	1.4.0	01dec2017
+xttest2	1878		
+rd	1872		
+matchit	1849	1.5.2	
+weakivtest	1827		
+groups	1744	1.4.1	20feb2018
+fitstat	1736		
+tuples	1717	4.0.3	16may2021
+tsmktim	1706		
+ineqdeco	1696	2.1.0	
+nearmrg	1684		
+spwmatrix	1671		
+wbopendata	1654	16.3.0	08jul2020
+ardl	1647		
+newey2	1641		
+corrtex	1638		
+mipolate	1622		
+ipdmetan	1613		
+bdiff	1555		
+table1_mc	1515		
+metabias	1497		
+parmest	1482		
+xsmle	1465		
+xls2dta	1446		
+fillmissing	1440		
+ivregress2	1416		
+labone	1406		
+ppml	1398		
+extremes	1397		
+egranger	1380		
+freduse	1364		
+oaxaca	1352	4.0.5	24aug2011
+mmerge	1335		
+freqindex	1312		
+gzsave	1305		
+rdrobust	1297	8.0.2	25sep2018
+ttable2	1295		
+table1	1289		
+grqreg	1282		
+ciplot	1281		
+numdate	1261		
+t2docx	1258		
+sencode	1250		
+fastxtile	1213	1.22	24jul2014
+songbl	1211		
+fsum	1205		
+txttool	1200		
+astile	1194		
+metafunnel	1187		
+aaplot	1186		
+mtefe	1182		
+underid	1169		
+vioplot	1162		
+mat2txt	1161		
+sxpose	1154		
+ginidesc	1152		
+metaninf	1141		
+lgraph	1136		
+tidy	1132		
+cem	1125		
+whitetst	1097		
+splitvallabels	1083		
+ritest	1066		
+xtable	1059		
+tsspell	1041		
+reclink	1037		
+charlist	1022		
+importsav	1009		
+levinlin	1009		
+regsave	997		
+fcstats	995		
+ttable3	995		
+boottest	986		
+revrs	983		
+moss	979		
+metareg	956		
+balancetable	938		
+nbercycles	926		
+eventstudy2	923		
+labellist	913		
+omodel	907		
+qregpd	906		
+parallel	901	1.22.0	24ago2015
+xtwest	898		
+tsegen	886		
+cibar	885		
+sppack	882		
+confirmdir	878		
+utest	877		
+cdfplot	875		
+maptile	865		
+xtqreg	865		
+ascol	862		
+tab_chi	853		
+gcause	846		
+renvarlab	844		
+statastates	842		
+personage	841		
+dataout	814		
+ridgereg	810		
+midas	808		
+xtpmg	806		
+deci	800		
+findname	796		
+lassopack	796		
+tvdiff	795		
+hdfe	793		
+cmp	776		
+did_multiplegt	772		
+cntrade	760		
+ua	754		
+savesome	752		
+weakiv	749		
+appendfile	747		
+ietoolkit	742		
+mrtab	741		
+quantiles	740		
+sepscatter	730		
+texsave	723		
+texdoc	712		
+mkcorr	709		
+hprescott	707		
+libjson	694		
+sbbq	694		
+cmogram	694		
+mixlogit	688		
+kpss	686		
+oparallel	679		
+hhi5	677		
+gologit2	667		
+matsort	661		
+chewfile	657		
+eventdd	655		
+insheetjson	648		
+glcurve	648		
+geonear	646		
+getsymbols	642		
+qreg2	638		
+gllamm	625		
+runby	614		
+ivendog	614		
+ineqdec0	611		
+ebalance	609		
+xtgcause	605		
+xtfisher	603		
+mylabels	602		
+combomarginsplot	596		
+tmpdir	595		
+markstat	588		
+todate	577		
+xtfmb	574		
+concindc	574		
+lorenz	571		
+nrow	569		
+xml_tab	566		
+heatplot	560		
+onespell	557		
+prodest	555		
+bacondecomp	554		
+rmse	550		
+labvars	549		
+geo2xy	548		
+ipshin	547		
+geoinpoly	545		
+xtcointreg	543		
+splagvar	543		
+jarowinkler	542		
+nnmatch	536		
+whereis	532		
+jb6	530		
+listtab	527		
+ivhettest	526		
+mergemany	524		
+xtcd2	518		
+corsp	518		
+sfcross	515		
+rangejoin	510		
+_gprod	509		
+pescadf	508		
+tabstatmat	506		
+xtdcce2	505		
+estudy	502		
+labvalch3	501		
+gvselect	498		
+strdist	492		
+labmv	486		
+labutil2	484		
+missing	481		
+xtpattern	479		
+xtmg	474		
+labmm	470		
+stripplot	465		
+psestimate	465		
+addplot	463		
+tabplot	463		
+xtcd	462		
+txtlabdef	461		
+mkprofile	461		
+labrec	459		
+vselect	459		
+uselab	458		
+zscore06	458		
+labvalpool	457		
+openall	455		
+labvalcl	455		
+shortdir	453		
+orth_out	449		
+flexpaneldid	446		
+fagan	443		
+tab3way	441		
+mediation	440		
+firthlogit	440		
+chowreg	433		
+xtgraph	424		
+spineplot	423		
+fmlogit	422		
+ftest	419		
+labsumm	417		
+network	414		
+itsa	413		
+sfpanel	412		
+interflex	410		
+xtcdf	410		
+epiweek	409		
+mean2	405		
+regcheck	404		
+cusum6	403		
+inequal7	402		
+mixlogitwtp	402		
+outtable	399		
+wid	398		
+twowayfeweights	397		
+zandrews	396		
+actest	394		
+somersd	393		
+outsum	392		
+rhausman	390		
+fastgini	388		
+nysiis	388		
+khb	387		
+rcsgen	385		
+xtserialpm	384		
+mvmeta	381		
+hhi	381		
+ghk2	378		
+vincenty	375		
+psacalc	374		
+sicff	371		
+usesas	370		
+xtlsdvc	369		
+savespss	369		
+medsem	368		
+coldiag2	367		
+ivreg2h	365		
+xtcips	362		
+sutex	362		
+stcompet	359		
+rsource	358		
+multipurt	357		
+malmq2	355		
+savasas	353		
+spcs2xt	352		
+cutpt	351		
+metatrim	347		
+metacum	346		
+xtdpdgmm	345		
+mergepoly	343		
+graph3d	341		
+chowtest	341		
+rowsort	341		
+mfx2	339		
+rif	337		
+radar	335		
+bigtab	333		
+ttesttable	333		
+lclogit	333		
+surface	332		
+mergeall	332		
+trimmean	331		
+elabel	329		
+xtpedroni	328		
+randtreat	327		
+xtmrho	320		
+multencode	318		
+tabcount	317		
+indeplist	316		
+vreverse	314		
+isko	314		
+saswrapper	314		
+kdens	313		
+xtsur	311		
+cpigen	311		
+lambda	309		
+kwallis2	305		
+kmatch	304		
+hausman	303		
+survwgt	302		
+rforest	300		
+mvprobit	299		
+descsave	299		
+pdslasso	298		
+eclplot	297		
+hireg	295		
+tvgc	295		
+ppml_panel_sg	294		
+abar	293		
+charlson	292		
+stpm2	291		
+diagt	289		
+xtpqml	289		
+reg2hdfe	289		
+lincomest	287		
+cluster2	285		
+povdeco	283		
+rbounds	281		
+sdmxuse	280		
+sumup	279		
+pmcalplot	278		
+sortl	278		
+hamiltonfilter	277		
+grstest2	275		
+marginscontplot2	275		
+scto	275		
+nsplit	274		
+xtdpdml	274		
+ivqreg2	272		
+chartab	272		
+isvar	271		
+ci2	271		
+scat3	271		
+metaprop	270		
+hadrilm	269		
+latab	268		
+movestay	267		
+bgshade	266		
+clus_nway	266		
+stddiff	265		
+graphlog	264		
+gsample	263		
+mimrgns	262		
+matmap	261		
+expgen	261		
+opencagegeo	257		
+multimport	256		
+paramed	256		
+seq	253		
+eventstudyweights	253		
+crossfold	253		
+cusum9	253		
+strgroup	252		
+dcreate	252	1.4.1	18aug2017
+dmariano	251		
+wtp	249		
+dfsummary	249		
+povcalnet	249		
+qregplot	248		
+kdens2	248		
+xtheckmanfe	247		
+byhist	247		
+pwcorr2	247		
+ainequal	246		
+margeff	245		
+dmexogxt	245		
+archqq	244		
+erepost	244		
+estwrite	244		
+matsave	244		
+listtex	241		
+dadjoke	240		
+motivate	238		
+matvsort	237		
+grsftest	236		
+partgam	235		
+boxtid	235		
+admetan	234		
+xtqptest	234		
+ipfweight	233		
+xthst	233		
+mplotoffset	232		
+mahapick	232		
+matnames	231		
+matpwcorr	231		
+domin	231		
+bioprobit	231		
+cltest	230		
+metandi	230		
+mundlak	229		
+ihstrans	229		
+csvconvert	229		
+ptrend	229		
+keeporder	228		
+qic	227		
+bcoeff	226		
+coldiag	225		
+spregdpd	224		
+repest	223		
+distplot	222		
+plotmatrix	222		
+iefieldkit	221		
+regwls	220		
+xtdolshm	220		
+cfout	220		
+norm	219		
+tabexport	218		
+egen_inequal	218		
+use13	217		
+randomtag	217		
+mvport	217		
+cnstock	216		
+dpplot	216		
+xtcsi	216		
+twopm	215		
+csipolate	215		
+runmlwin	214		
+johans	214		
+grtext	213		
+equation	212		
+zipsave	212		
+conindex	212		
+inequal2	211		
+mpi	207		
+ivreg2hdfe	207		
+hte	206		
+cleanchars	206		
+clorenz	206		
+descogini	206		
+eventstudy	206		
+shapley2	205		
+doubleb	205		
+pwcorrf	203		
+sdecode	203		
+sumdist	202		
