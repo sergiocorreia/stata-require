@@ -18,6 +18,8 @@ require reghdfe>=6
 require gtools=1.7.5
 require ftools>=2.43
 
+require using requirements.txt, install
+
 exit
 
 require fastxtile, from(...)
