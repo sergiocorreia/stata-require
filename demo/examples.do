@@ -3,6 +3,10 @@ cls
 cap ado uninstall require
 net install require, from("c:\git\stata-require\src")
 
+require stripplot>=2.9, verbose
+
+exit
+
 require stata>=16
 require reghdfe>=6
 require ftools>=2.47

@@ -1,4 +1,4 @@
-*! version 0.9.1 11jul2021
+*! version 0.9.2 13jul2021
 
 * require ftools
 * require ftools>=1
@@ -40,7 +40,7 @@ program require
 	loc strict = cond("`strict'"=="" & "`required_version'"=="", "", "strict")
 	`prefix' GetVersion `ado', `options' `strict'
 
-	if (c(rc)) {
+	if ( ("`install'" != "") & (c(rc)) ) {
 		Install `ado', from(`from')
 		require `backup', `options'
 	}
@@ -77,6 +77,15 @@ end
 program	GetVersion, sclass
 	syntax anything(name=ado), [PATH(string) STRICT VERBOSE]
 	sreturn clear
+	
+	* Workaround for bug in Stata:
+	* mata findfile() uses filexists() which uses _fopen()
+	* however, instead of only checking for error code -601 (file not found), it checks for all error codes
+	* which includes: "fopen():  3611  too many open files"
+	* which is sometimes returned if a previous fopen() was not followed by fclose()
+	cap mata: fclose(1)
+	cap // we must reset the error code to zero else it might get used outside this program (unsure why)
+
 	mata: get_version("`ado'", "`path'", "`strict'"!="", "`verbose'"!="")
 end
 
@@ -92,7 +101,13 @@ program Install
 		ssc install `ado'
 	}
 	else {
-		net install `ado', from("`from'")
+		net install `ado', from("`from'") replace
+		// replace should be redundant given our previous "ado uninstall", but might be useful in case of conflicts (multiple installs)
+		
+		* For packages that require it, update mata library index
+		if inlist("`ado'", "parallel") {
+			mata mata mlib index
+		}
 	}
 end
 
@@ -102,18 +117,28 @@ mata set matastrict on
 void get_version(string scalar ado, string scalar path, real scalar strict, real scalar verbose)
 {
 	real scalar fh, ok, i
-	string scalar fn, line, first_char
+	string scalar fn, line, first_char, ext
+
+	ok = 0 // default values if we exit early (e.g. if there are no starbang lines)
+
+	// Select extension: .ado by default, .scheme for graphic schemes
+	if (strpos(ado, "scheme-")==1) {
+		ext = ".scheme"
+	}
+	else {
+		ext = ".ado"
+	}
 	
 	// Load file
 	if (path == "") {
-		fn = findfile(ado + ".ado", c("adopath"))
+		fn = findfile(ado + ext, c("adopath"))
 	}
 	else {
-		fn = findfile(ado + ".ado", path)
+		fn = findfile(ado + ext, path)
 	}
 
 	if (fn == "") {
-		printf("{err}file not found: %s.ado\n", ado)
+		printf("{err}file not found: %s%s\n", ado, ext)
 		exit(2222)
 	}
 
@@ -127,6 +152,11 @@ void get_version(string scalar ado, string scalar path, real scalar strict, real
 
 		if (!strlen(line)) {
 			if (verbose) printf("{txt}   $$ empty line found, continuing\n")
+			continue
+		}
+
+		if (regexm(line, "^(cap|capt|captu|captur|capture)? *pr")) {
+			if (verbose) printf("{txt}   $$ program definition found, continuing\n")
 			continue
 		}
 
@@ -167,8 +197,11 @@ real scalar inner_get_version(string scalar line, string scalar ado, real scalar
 	END = "$"
 	DOT = "[.]"
 	SPACE = " +"
-	AUTHOR = "( [a-z @,.-]+)?" // must be at the end
+	AUTHOR = "( +[a-z @<>,._'&-]+)?" // must be at the end; also handles <e_mail@addresses.com>, lists (via commas), explanations (&' as ineqdeco)
+	TIME = "( +[0-9][0-9]:[0-9][0-9]:[0-9][0-9])?" // used by unique.ado
 	DATESEP = "[./-]"
+
+	// Note: Stata does not support named capturing groups, so we must use author carefully unless its at the end! (because its a group)
 
 	all_months = ("jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec")
 	
@@ -198,6 +231,9 @@ real scalar inner_get_version(string scalar line, string scalar ado, real scalar
 
 	// Replace "*!version " with "!* version "
 	line = subinstr(line, "*!version ", "*! version ")
+
+	// Replace "*! <package> version" with "!* version"
+	line = subinstr(line, sprintf("*! %s version ", ado), "*! version ")
 
 	// Replace "*! <package>" with "!* version"
 	line = subinstr(line, sprintf("*! %s ", ado), "*! version ")
@@ -242,40 +278,57 @@ real scalar inner_get_version(string scalar line, string scalar ado, real scalar
 		month = all_months[strtoreal(regexs(3))]
 		return(store_version(ado, regexs(1), "0", "0", regexs(4), month, regexs(2), raw_line))
 	}
-	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	// Match x.y.z AUTHOR DD mmm YYYY		[distinct]
+	// Match x.y.z AUTHOR DDmmmYYYY		[distinct, stripplot]
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	if (verbose) printf(`"{txt}   $$ trying to parse "<version> AUTHOR DD mmm YYYY"\n"')
-	pat = START + NUM + DOT + NUM + DOT + NUM + SPACE + AUTHOR + SPACE + DAY + " " + MON + " " + YEAR + END
+	if (verbose) printf(`"{txt}   $$ trying to parse "<version> <author> DDmmmYYYY"\n"')
+	pat = START + NUM + DOT + NUM + DOT + NUM + AUTHOR + SPACE + DAY + " ?" + MON + " ?" + YEAR + END
 	if (regexm(line, pat)) {
 		return(store_version(ado, regexs(1), regexs(2), regexs(3), regexs(4), regexs(5), regexs(6), raw_line))
 	}
-	pat = START + NUM + DOT + NUM + SPACE + AUTHOR + SPACE + DAY + " " + MON + " " + YEAR + END
+	pat = START + NUM + DOT + NUM + AUTHOR + SPACE + DAY + " ?" + MON + " ?" + YEAR + END
 	if (regexm(line, pat)) {
 		return(store_version(ado, regexs(1), regexs(2), "0", regexs(3), regexs(4), regexs(5), raw_line))
 	}
-	pat = START + NUM + SPACE + AUTHOR + SPACE + DAY + " " + MON + " " + YEAR + END
+	pat = START + NUM + AUTHOR + SPACE + DAY + " ?" + MON + " ?" + YEAR + END
 	if (regexm(line, pat)) {
 		return(store_version(ado, regexs(1), "0", "0", regexs(2), regexs(3), regexs(4), raw_line))
 	}
 
 
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	// Match x.y.z, mmm DD, YYYY		[asgen]
+	// Match x.y.z AUTHOR 		(no date!) [synth_runner]
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	if (verbose) printf(`"{txt}   $$ trying to parse "<version>, mmm DD, YYYY"\n"')
-	pat = START + NUM + DOT + NUM + DOT + NUM + ",? +"+ MON + " " + DAY + ",? +" + YEAR + END
+	if (verbose) printf(`"{txt}   $$ trying to parse "<version> <author>"\n"')
+	pat = START + NUM + DOT + NUM + DOT + NUM + AUTHOR + END
+	if (regexm(line, pat)) {
+		return(store_version(ado, regexs(1), regexs(2), regexs(3), "", "", "", raw_line))
+	}
+	pat = START + NUM + DOT + NUM + AUTHOR + END
+	if (regexm(line, pat)) {
+		return(store_version(ado, regexs(1), regexs(2), "0", "", "", "", raw_line))
+	}
+	pat = START + NUM + AUTHOR + END
+	if (regexm(line, pat)) {
+		return(store_version(ado, regexs(1), "0", "0", "", "", "", raw_line))
+	}
+
+
+	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	// Match x.y.z, mmm DD, YYYY		[asgen, unique]
+	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	if (verbose) printf(`"{txt}   $$ trying to parse "<version>, mmm DD, YYYY <author>"\n"')
+	pat = START + NUM + DOT + NUM + DOT + NUM + ",? +"+ MON + " " + DAY + ",? +" + YEAR + AUTHOR + TIME + END
 	if (regexm(line, pat)) {
 		return(store_version(ado, regexs(1), regexs(2), regexs(3), regexs(5), regexs(4), regexs(6), raw_line))
 	}
-	pat = START + NUM + DOT + NUM + ",? +"+ MON + " " + DAY + ",? +" + YEAR + END
+	pat = START + NUM + DOT + NUM + ",? +"+ MON + " " + DAY + ",? +" + YEAR + AUTHOR + TIME + END
 	if (regexm(line, pat)) {
 		return(store_version(ado, regexs(1), regexs(2), "0", regexs(4), regexs(3), regexs(5), raw_line))
 	}
-	pat = START + NUM + ",? +"+ MON + " " + DAY + ",? +" + YEAR + END
+	pat = START + NUM + ",? +"+ MON + " " + DAY + ",? +" + YEAR + AUTHOR + TIME + END
 	if (regexm(line, pat)) {
 		return(store_version(ado, regexs(1), "0", "0", regexs(3), regexs(2), regexs(4), raw_line))
 	}
