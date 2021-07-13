@@ -11,11 +11,20 @@
 * require ftools, install from(..)
 
 program require
+	* Intercept "require using ..."
+	cap syntax using, [INSTALL FROM(string) STRICT] [*]
+	if (!c(rc)) {
+		RequireFile `using', `install' from(`from') `strict' `options'
+		exit
+	}
+
+
 	syntax anything(name=ado_extra equalok), [INSTALL FROM(string) STRICT] [*]
 
-	local backup `"`ado_extra'"'
+	loc backup `"`ado_extra'"'
 	gettoken ado ado_extra: ado_extra, parse(">= ")
 	gettoken op required_version: ado_extra, parse(">= ")
+	loc required_version `required_version' // remove leading spaces
 
 	loc prefix = cond("`install'" == "", "", "cap noi")
 
@@ -47,6 +56,21 @@ program require
 			require `backup', `options'
 		}
 	}
+end
+
+program RequireFile
+	syntax using, [INSTALL FROM(string) STRICT] [*]
+	tempname fh
+	file open `fh' `using', read
+	while 1 {
+		*display %4.0f `linenum' _asis `"  `macval(line)'"'
+		file read `fh' line
+		if (r(eof)) continue, break
+		loc cmd "require `line', `install' `strict' `options'" // Can't allow from()!
+		di as text `"`cmd'"' 
+		`cmd'
+	}
+	file close `fh'
 end
 
 

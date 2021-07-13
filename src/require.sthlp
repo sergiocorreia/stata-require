@@ -43,6 +43,14 @@
 {opt from(url)}]
 {p_end}
 
+{pstd}
+{bf:Using requirements file:}
+
+{p 8 15 2}
+{cmd:require} {cmd:using} {it:requirements.txt}{cmd:,}
+[{opt install}
+{opt from(url)}]
+{p_end}
 
 {marker options_table}{...}
 {synoptset 22 tabbed}{...}
@@ -62,7 +70,7 @@ by ensuring that people that run your code are using compatible versions of the 
 (either minimum versions, of exact versions).
 
 {pstd}
-This is very useful in these three settings:
+This is useful in these four settings:
 
 {pmore}
 1. To avoid problems if e.g. your coauthors have older versions of regression commands (rdrobust, reghdfe, ivreg2, etc.).
@@ -73,6 +81,10 @@ This is important because newer versions of these commands might change the resu
 
 {pmore}
 3. To ensure other researchers can reproduce your code.
+
+
+{pmore}
+4. If you are writing programs, to ensure your dependencies are met.
 
 {pstd}
 {cmd:require} tries to convert user-created versions into {browse "https://semver.org/":semvers} (semantic versions).
@@ -96,6 +108,17 @@ Thus, "version 1" becomes "version 1.0.0", indicating the major version, minor v
 
 {phang2}{cmd:require reghdfe>=6.0}{p_end}
 {phang2}{cmd:require ftools>=2.47}{p_end}
+
+
+{pstd}Use require with a text file:{p_end}
+
+{phang2}{cmd:require using requirements.txt, install}{p_end}
+
+{phang2}{hline 12} requirements.txt {hline 12}{p_end}
+{phang2}{cmd:reghdfe>=6}{p_end}
+{phang2}{cmd:ftools>=2.47}{p_end}
+{phang2}{cmd:something>=1, from(someurl)}{p_end}
+{phang2}{hline 42}{p_end}
 
 
 {marker results}{...}
