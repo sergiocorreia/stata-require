@@ -1,14 +1,4 @@
-*! version 0.9.2 13jul2021
-
-* require ftools
-* require ftools>=1
-* require ftools>=1.0.0
-* require ftools >= 1.0.0
-* require ftools == 1.0.0
-* require ftools>=10jul2021
-* require ftools>=20210710
-* require ftools, install
-* require ftools, install from(..)
+*! version 0.9.3 16jul2021
 
 program require
 	* Intercept "require using ..."
@@ -18,33 +8,32 @@ program require
 		exit
 	}
 
-
+	* Normal usage
 	syntax anything(name=ado_extra equalok), [INSTALL FROM(string) STRICT] [*]
 
+	* Detect package and minimum/required version names
 	loc backup `"`ado_extra'"'
 	gettoken ado ado_extra: ado_extra, parse(">= ")
 	gettoken op required_version: ado_extra, parse(">= ")
 	loc required_version `required_version' // remove leading spaces
-
-	loc prefix = cond("`install'" == "", "", "cap noi")
-
-	if ("`op'" == "=") loc op "=="
-
+	if ("`op'" == "=") loc op "==" // allow "=" instead of "=="
 	_assert inlist("`op'", ">=", "==", "")
 
+	* Allow "require stata>=16"
 	if ("`ado'"=="stata") {
 		version `required_version': qui
 		exit
 	}
 
+	loc prefix = cond("`install'" == "", "", "cap noi")
 	loc strict = cond("`strict'"=="" & "`required_version'"=="", "", "strict")
+	
 	`prefix' GetVersion `ado', `options' `strict'
 
 	if ( ("`install'" != "") & (c(rc)) ) {
 		Install `ado', from(`from')
 		require `backup', `options'
 	}
-
 
 	if ("`op'" != "") {
 		*di as text "ado: `ado'"
@@ -57,6 +46,7 @@ program require
 		}
 	}
 end
+
 
 program RequireFile
 	syntax using, [INSTALL FROM(string) STRICT] [*]
@@ -75,8 +65,14 @@ end
 
 
 program	GetVersion, sclass
-	syntax anything(name=ado), [PATH(string) STRICT VERBOSE]
+	syntax anything(name=ado), [PATH(string) STRICT VERBOSE DEBUG(string)]
 	sreturn clear
+
+	* If we are debugging, we just try to parse a given line
+	if (`"`debug'"' != "") {
+		mata: exit(inner_get_version(`"`debug'"', "`ado'", 1) ? 0 : 2222)
+		exit
+	}
 	
 	* Workaround for bug in Stata:
 	* mata findfile() uses filexists() which uses _fopen()
@@ -117,7 +113,7 @@ mata set matastrict on
 void get_version(string scalar ado, string scalar path, real scalar strict, real scalar verbose)
 {
 	real scalar fh, ok, i
-	string scalar fn, line, first_char, ext
+	string scalar fn, line, first_char, ext, url
 
 	ok = 0 // default values if we exit early (e.g. if there are no starbang lines)
 
@@ -139,6 +135,15 @@ void get_version(string scalar ado, string scalar path, real scalar strict, real
 
 	if (fn == "") {
 		printf("{err}file not found: %s%s\n", ado, ext)
+		url = sprintf("ssc install %s", ado)
+		printf("{err} maybe {stata %s:install from SSC}", url)
+		url = sprintf("https://github.com/search?q=filename:%s.pkg", ado)
+		printf(`"{err} or {browse "%s":search on Github}\n"', url)
+
+		url = sprintf("ssc install %s", ado)
+		printf(`"{err}- {stata "%s":install} from SSC (if available)\n"', url)
+		url = sprintf("https://github.com/search?q=filename:%s.pkg", ado)
+		printf(`"{err}- {browse "%s":search} on Github\n"', url)
 		exit(2222)
 	}
 

@@ -3,6 +3,10 @@ cls
 cap ado uninstall require
 net install require, from("c:\git\stata-require\src")
 
+require foobar>=3.1, debug("ASDASD")
+exit
+
+
 require stripplot>=2.9, verbose
 
 exit
@@ -51,3 +55,10 @@ require stata>=16
 require reghdfe=5.85.0
 require ftools>=5.1
 
+
+
+/*
+      net install ddtiming, from(https://tgoldring.com/code/)
+
+
+*/
