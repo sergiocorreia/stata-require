@@ -3,8 +3,11 @@ cls
 cap ado uninstall require
 net install require, from("c:\git\stata-require\src")
 
-require foobar>=3.1, debug("ASDASD")
+require rddensity>=1, debug("*!version 1.0 14-Jul-2019")
+require erepost>=1.0.2, debug("*! version 1.0.2, Ben Jann, 15jun2015")
 exit
+
+require foobar>=3.1, debug("ASDASD")
 
 
 require stripplot>=2.9, verbose

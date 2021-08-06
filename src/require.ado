@@ -1,10 +1,10 @@
-*! version 0.9.3 16jul2021
+*! version 0.9.4 04aug2021
 
 program require
 	* Intercept "require using ..."
-	cap syntax using, [INSTALL FROM(string) STRICT] [*]
+	cap syntax using, [INSTALL STRICT] // [*]
 	if (!c(rc)) {
-		RequireFile `using', `install' from(`from') `strict' `options'
+		RequireFile `using', `install' `strict' // `options'
 		exit
 	}
 
@@ -49,14 +49,24 @@ end
 
 
 program RequireFile
-	syntax using, [INSTALL FROM(string) STRICT] [*]
+	syntax using, [INSTALL STRICT]
 	tempname fh
 	file open `fh' `using', read
 	while 1 {
 		*display %4.0f `linenum' _asis `"  `macval(line)'"'
 		file read `fh' line
 		if (r(eof)) continue, break
-		loc cmd "require `line', `install' `strict' `options'" // Can't allow from()!
+
+		* Remove surrounding spaces
+		loc line = subinstr(`"`line'"', char(9), " ", .) // tab
+		loc line = strtrim(`"`line'"')
+
+		if (strlen(`"`line'"')==0) continue
+		if (strpos(`"`line'"', "#")==1) continue
+
+		loc 0 `line'
+		syntax anything(name=ado_extra equalok), [FROM(string)]
+		loc cmd `"require `ado_extra', from(`from') `install' `strict'"'
 		di as text `"`cmd'"' 
 		`cmd'
 	}
@@ -93,7 +103,7 @@ program Install
 	_assert c(rc), msg(`"Could not install, "`ado'" still exists"')
 
 	di as text "(installing `ado')"
-	if ("`from'" == "") {
+	if inlist(strlower("`from'"), "", "ssc") {
 		ssc install `ado'
 	}
 	else {
@@ -187,7 +197,7 @@ void get_version(string scalar ado, string scalar path, real scalar strict, real
 real scalar inner_get_version(string scalar line, string scalar ado, real scalar verbose)
 {
 	string scalar raw_line
-	string scalar MON, SHORT_MON, NUM, DAY, YEAR, START, END, DOT, SPACE, DATESEP, AUTHOR
+	string scalar MON, SHORT_MON, NUM, DAY, YEAR, START, END, DOT, SPACE, DATESEP1, DATESEP2, AUTHOR
 	string scalar all_months, pat, month
 
 	raw_line = line // backup
@@ -202,9 +212,10 @@ real scalar inner_get_version(string scalar line, string scalar ado, real scalar
 	END = "$"
 	DOT = "[.]"
 	SPACE = " +"
-	AUTHOR = "( +[a-z @<>,._'&-]+)?" // must be at the end; also handles <e_mail@addresses.com>, lists (via commas), explanations (&' as ineqdeco)
+	AUTHOR = "([ ,]+[a-z @<>,._'&-]+)?" // must be at the end; also handles <e_mail@addresses.com>, lists (via commas), explanations (&' as ineqdeco)
 	TIME = "( +[0-9][0-9]:[0-9][0-9]:[0-9][0-9])?" // used by unique.ado
-	DATESEP = "[./-]"
+	DATESEP1 = "[./-]"
+	DATESEP2 = "[ -]?"
 
 	// Note: Stata does not support named capturing groups, so we must use author carefully unless its at the end! (because its a group)
 
@@ -255,30 +266,30 @@ real scalar inner_get_version(string scalar line, string scalar ado, real scalar
 	// Match x.y.z DDmmmYY					[reghdfe ftools]
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	if (verbose) printf(`"{txt}   $$ trying to parse "<version> DDmmmYY"\n"')
-	pat = START + NUM + DOT + NUM + DOT + NUM + SPACE + DAY + " ?" + MON + " ?" + YEAR + AUTHOR + END
+	pat = START + NUM + DOT + NUM + DOT + NUM + SPACE + DAY + DATESEP2 + MON + DATESEP2 + YEAR + AUTHOR + END
 	if (regexm(line, pat)) {
 		return(store_version(ado, regexs(1), regexs(2), regexs(3), regexs(4), regexs(5), regexs(6), raw_line))
 	}
-	pat = START + NUM + DOT + NUM + SPACE + DAY + " ?" + MON + " ?" + YEAR + AUTHOR + END
+	pat = START + NUM + DOT + NUM + SPACE + DAY + DATESEP2 + MON + DATESEP2 + YEAR + AUTHOR + END
 	if (regexm(line, pat)) {
 		return(store_version(ado, regexs(1), regexs(2), "0", regexs(3), regexs(4), regexs(5), raw_line))
 	}
-	pat = START + NUM + SPACE + DAY + " ?" + MON + " ?" + YEAR + AUTHOR + END
+	pat = START + NUM + SPACE + DAY + DATESEP2 + MON + DATESEP2 + YEAR + AUTHOR + END
 	if (regexm(line, pat)) {
 		return(store_version(ado, regexs(1), "0", "0", regexs(2), regexs(3), regexs(4), raw_line))
 	}
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ "2021-05-18" = "YYYY-MM-DD"
-	pat = START + NUM + DOT + NUM + DOT + NUM + SPACE + YEAR + DATESEP + SHORT_MON + DATESEP + DAY + AUTHOR + END
+	pat = START + NUM + DOT + NUM + DOT + NUM + SPACE + YEAR + DATESEP1 + SHORT_MON + DATESEP1 + DAY + AUTHOR + END
 	if (regexm(line, pat)) {
 		month = all_months[strtoreal(regexs(5))]
 		return(store_version(ado, regexs(1), regexs(2), regexs(3), regexs(6), month, regexs(4), raw_line))
 	}
-	pat = START + NUM + DOT + NUM + SPACE + YEAR + DATESEP + SHORT_MON + DATESEP + DAY + AUTHOR + END
+	pat = START + NUM + DOT + NUM + SPACE + YEAR + DATESEP1 + SHORT_MON + DATESEP1 + DAY + AUTHOR + END
 	if (regexm(line, pat)) {
 		month = all_months[strtoreal(regexs(4))]
 		return(store_version(ado, regexs(1), regexs(2), "0", regexs(5), month, regexs(3), raw_line))
 	}
-	pat = START + NUM + SPACE + YEAR + DATESEP + SHORT_MON + DATESEP + DAY + AUTHOR + END
+	pat = START + NUM + SPACE + YEAR + DATESEP1 + SHORT_MON + DATESEP1 + DAY + AUTHOR + END
 	if (regexm(line, pat)) {
 		month = all_months[strtoreal(regexs(3))]
 		return(store_version(ado, regexs(1), "0", "0", regexs(4), month, regexs(2), raw_line))

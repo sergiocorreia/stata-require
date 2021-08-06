@@ -18,3 +18,17 @@ To install locally, type:
 cap ado uninstall require
 net install require, from("c:\git\stata-require\src")
 ```
+
+
+
+--------
+
+
+Misc: `here` notes:
+
+1) Maybe `$here` should exclude the trailing `/`? Otherwise we end up with repeated slashes in:
+
+```stata
+use "$here/path/dataset"
+```
+
