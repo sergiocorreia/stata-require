@@ -32,3 +32,14 @@ Misc: `here` notes:
 use "$here/path/dataset"
 ```
 
+
+
+## Packages not supported by `require`
+
+### No version numbers:
+
+- `rtfutil`
+- `sencode`
+- `listtab`
+
+

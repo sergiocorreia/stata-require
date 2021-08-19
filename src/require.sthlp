@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 0.9.4 04aug2021}{...}
+{* *! version 0.9.5 19aug2021}{...}
 {viewerjumpto "Syntax" "require##syntax"}{...}
 {viewerjumpto "Description" "require##description"}{...}
 {viewerjumpto "Options" "require##options"}{...}
@@ -59,7 +59,9 @@
 {syntab:Main}
 {synopt: {opt install}}install package if not present or wrong version(from SSC by default){p_end}
 {synopt: {opt from(url)}}location of the package (e.g.: a Github URL){p_end}
-{synopt: {opt strict}}development option. Raises an error if starbang couldn't be parsed even when not checking versions{p_end}
+{syntab:Developer options}
+{synopt: {opt strict}}raise an error if the starbang couldn't be parsed even when not checking versions{p_end}
+{synopt: {opt debug(str)}}instead of parsing the file, treat the provided string as the starbang{p_end}
 
 
 {marker description}{...}

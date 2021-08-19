@@ -1,4 +1,4 @@
-*! version 0.9.4 04aug2021
+*! version 0.9.5 19aug2021
 
 program require
 	* Intercept "require using ..."
@@ -123,24 +123,40 @@ mata set matastrict on
 void get_version(string scalar ado, string scalar path, real scalar strict, real scalar verbose)
 {
 	real scalar fh, ok, i
-	string scalar fn, line, first_char, ext, url
+	string scalar fn, line, first_char, url
 
 	ok = 0 // default values if we exit early (e.g. if there are no starbang lines)
 
-	// Select extension: .ado by default, .scheme for graphic schemes
-	if (strpos(ado, "scheme-")==1) {
-		ext = ".scheme"
+	fn = sprintf("%s.ado", ado)
+
+	// Fix filenames of graphic schemes
+	// We allow for "scheme-*" and "scheme_*" prefixes (former is preferred though)
+	if (strpos(ado, "scheme")==1) {
+		fn = sprintf("%s.scheme", subinstr(ado, "scheme_", "scheme-", 1))
 	}
-	else {
-		ext = ".ado"
-	}
-	
+
+	// Workaround for SJ packages (might want to search for a more comprehensive strategy)
+	if (fn == "gr0070.ado") fn = "scheme-plottig.scheme"
+	if (fn == "pr0062_2.ado") fn = "texdoc.ado"
+
+	// Some packages don't have .ado files. This workaround is not comprehensive though
+	if (fn == "egenmisc.ado") fn = "egenmisc.sthlp"
+	if (fn == "brewscheme.ado") fn = "brewscheme.sthlp" // the starbang line on the .ado is malformed
+	if (fn == "binscatter2.ado") fn = "binscatter2.sthlp" // the starbang line on the .ado is malformed
+	if (fn == "palettes.ado") fn = "colorpalette.ado"
+	if (fn == "colrspace.ado") fn = "colrspace_source.sthlp"
+	if (fn == "g538schemes.ado") fn = "scheme-538.scheme"
+	if (fn == "scheme-burd.scheme") fn = "scheme_burd.sthlp"
+	if (fn == "moremata.ado") fn = "moremata11_source.hlp" // moremata; not perfect b/c other files might have different versions
+	if (fn == "rdmulti.ado") fn = "rdmc.ado"  // RDMC: analysis of Regression Discontinuity Designs with multiple cutoffs
+	if (fn == "labutil.ado") fn = "labmask.ado"  // 'LABUTIL': modules for managing value and variable labels
+
 	// Load file
 	if (path == "") {
-		fn = findfile(ado + ext, c("adopath"))
+		fn = findfile(fn, c("adopath"))
 	}
 	else {
-		fn = findfile(ado + ext, path)
+		fn = findfile(fn, path)
 	}
 
 	if (fn == "") {
@@ -160,7 +176,8 @@ void get_version(string scalar ado, string scalar path, real scalar strict, real
 	if (verbose) printf("{txt}Parsing ADO {res}%s:\n", ado)
 
 	fh = fopen(fn, "r")
-	for (i=1; i<=5; i++) {
+	// scheme-plottig.scheme -> starbang on line 24
+	for (i=1; i<=25; i++) {
 		line = fget(fh)
 		line = strtrim(line)
 		if (verbose) printf("\n{txt} @@ line %f: {res}%s\n", i, line)
@@ -176,7 +193,7 @@ void get_version(string scalar ado, string scalar path, real scalar strict, real
 		}
 
 		first_char = substr(line, 1, 1)
-		if (!anyof( ("*", "!") , first_char)) {
+		if (!anyof( ("*", "!", "{") , first_char)) {
 			if (verbose) printf("{txt}   $$ non-comment line found, breaking\n")
 			break
 		}
@@ -210,6 +227,8 @@ real scalar inner_get_version(string scalar line, string scalar ado, real scalar
 	YEAR = "2?0?([0-3][0-9])"
 	START = "^[*]! +version +"
 	END = "$"
+	HELPSTART = "^[{][*] *[*]! +version +"
+	HELPEND = "[}]" // does not need to end the string
 	DOT = "[.]"
 	SPACE = " +"
 	AUTHOR = "([ ,]+[a-z @<>,._'&-]+)?" // must be at the end; also handles <e_mail@addresses.com>, lists (via commas), explanations (&' as ineqdeco)
@@ -223,6 +242,7 @@ real scalar inner_get_version(string scalar line, string scalar ado, real scalar
 	
 	line = strlower(line)
 	line = subinstr(line, char(9), " ")
+	line = invtokens(tokens(line)) // replace multiple consecutive spaces with a single space
 
 	// Try to standardize month names
 	line = subinstr(line, "january", "jan")
@@ -245,8 +265,20 @@ real scalar inner_get_version(string scalar line, string scalar ado, real scalar
 	// Replace "*! v " with "!* version "
 	line = subinstr(line, "*! v ", "*! version ")
 
+	// Replace "* version " with "!* version " [ppml]
+	line = subinstr(line, "* version ", "*! version ")
+
+	// Replace "*! NJC " with "!* version ""
+	line = subinstr(line, "*! njc ", "*! version ")
+
+	// Replace "*! This version: v" with "!* version "" [ppml_panel_sg]
+	line = subinstr(line, "*! this version: v", "*! version ")
+
 	// Replace "*!version " with "!* version "
 	line = subinstr(line, "*!version ", "*! version ")
+
+	// Replace "* !version " with "!* version " (rdmulti)
+	line = subinstr(line, "* !version ", "*! version ")
 
 	// Replace "*! <package> version" with "!* version"
 	line = subinstr(line, sprintf("*! %s version ", ado), "*! version ")
@@ -257,6 +289,13 @@ real scalar inner_get_version(string scalar line, string scalar ado, real scalar
 	// Add version string if it's missing after starbang
 	if (!strpos(line, "*! version ")) {
 		line = subinstr(line, "*! ", "*! version ")
+	}
+
+	// Sometimes packages are listed as "v0.1" or "v1.0" instead of "version 0.1"
+	if (!strpos(line, "version")) {
+		line = subinstr(line, "*! v0.", "*! version 0.")
+		line = subinstr(line, "*! v1.", "*! version 1.")
+		line = subinstr(line, "*! v2.", "*! version 2.")
 	}
 
 	if (verbose) printf(`"{txt}   $$ before parsing, line is: {res}%s\n"', line)
@@ -347,6 +386,37 @@ real scalar inner_get_version(string scalar line, string scalar ado, real scalar
 	pat = START + NUM + ",? +"+ MON + " " + DAY + ",? +" + YEAR + AUTHOR + TIME + END
 	if (regexm(line, pat)) {
 		return(store_version(ado, regexs(1), "0", "0", regexs(3), regexs(2), regexs(4), raw_line))
+	}
+
+
+	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	// Match help file: {* *! version x.y.z DDmmmYY}...
+	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	if (verbose) printf(`"{txt}   $$ trying to parse helpfile "<version> DDmmmYY"\n"')
+	pat = HELPSTART + NUM + DOT + NUM + DOT + NUM + SPACE + DAY + DATESEP2 + MON + DATESEP2 + YEAR + AUTHOR + HELPEND
+	if (regexm(line, pat)) {
+		return(store_version(ado, regexs(1), regexs(2), regexs(3), regexs(4), regexs(5), regexs(6), raw_line))
+	}
+	pat = HELPSTART + NUM + DOT + NUM + SPACE + DAY + DATESEP2 + MON + DATESEP2 + YEAR + AUTHOR + HELPEND
+	if (regexm(line, pat)) {
+		return(store_version(ado, regexs(1), regexs(2), "0", regexs(3), regexs(4), regexs(5), raw_line))
+	}
+	pat = HELPSTART + NUM + SPACE + DAY + DATESEP2 + MON + DATESEP2 + YEAR + AUTHOR + HELPEND
+	if (regexm(line, pat)) {
+		return(store_version(ado, regexs(1), "0", "0", regexs(2), regexs(3), regexs(4), raw_line))
+	}
+
+	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	// Match x.y.z DDmmmYY (last resort when date is malformed)					[colrpalette]
+	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	if (verbose) printf(`"{txt}   $$ trying to parse "<version> <whatever>"\n"')
+	pat = START + NUM + DOT + NUM + DOT + NUM + ",?[ ]+"
+	if (regexm(line, pat)) {
+		return(store_version(ado, regexs(1), regexs(2), regexs(3), "", "", "", raw_line))
+	}
+	pat = START + NUM + DOT + NUM + ",?[ ]+"
+	if (regexm(line, pat)) {
+		return(store_version(ado, regexs(1), regexs(2), "0", "", "", "", raw_line))
 	}
 
 
