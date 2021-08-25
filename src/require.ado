@@ -1,4 +1,4 @@
-*! version 0.9.5 19aug2021
+*! version 0.9.6 25aug2021
 
 program require
 	* Intercept "require using ..."
@@ -123,7 +123,7 @@ mata set matastrict on
 void get_version(string scalar ado, string scalar path, real scalar strict, real scalar verbose)
 {
 	real scalar fh, ok, i
-	string scalar fn, line, first_char, url
+	string scalar fn, full_fn, line, first_char, url
 
 	ok = 0 // default values if we exit early (e.g. if there are no starbang lines)
 
@@ -153,29 +153,24 @@ void get_version(string scalar ado, string scalar path, real scalar strict, real
 
 	// Load file
 	if (path == "") {
-		fn = findfile(fn, c("adopath"))
+		full_fn = findfile(fn, c("adopath"))
 	}
 	else {
-		fn = findfile(fn, path)
+		full_fn = findfile(fn, path)
 	}
 
-	if (fn == "") {
-		printf("{err}file not found: %s%s\n", ado, ext)
+	if (full_fn == "") {
+		printf("{err}file {bf:%s} not found", fn)
 		url = sprintf("ssc install %s", ado)
-		printf("{err} maybe {stata %s:install from SSC}", url)
+		printf("{err} (try to install from {stata %s:SSC}", url)
 		url = sprintf("https://github.com/search?q=filename:%s.pkg", ado)
-		printf(`"{err} or {browse "%s":search on Github}\n"', url)
-
-		url = sprintf("ssc install %s", ado)
-		printf(`"{err}- {stata "%s":install} from SSC (if available)\n"', url)
-		url = sprintf("https://github.com/search?q=filename:%s.pkg", ado)
-		printf(`"{err}- {browse "%s":search} on Github\n"', url)
-		exit(2222)
+		printf(`"{err}; search on {browse "%s":Github})\n"', url)
+		exit(601)
 	}
 
 	if (verbose) printf("{txt}Parsing ADO {res}%s:\n", ado)
 
-	fh = fopen(fn, "r")
+	fh = fopen(full_fn, "r")
 	// scheme-plottig.scheme -> starbang on line 24
 	for (i=1; i<=25; i++) {
 		line = fget(fh)
