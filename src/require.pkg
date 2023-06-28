@@ -9,9 +9,9 @@ d For more information, see https://github.com/sergiocorreia/stata-require
 d
 d KW: reproductible-research
 d
-d Requires: Stata version 12.1
+d Requires: Stata version 13.1
 d
-d Distribution-Date: 20210711
+d Distribution-Date: 20230627
 d
 
 f require.ado

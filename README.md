@@ -1,7 +1,19 @@
-# stata-require
+# REQUIRE: Ensure that installed Stata packages have a minimum/exact version
+
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/sergiocorreia/stata-require?label=last%20version)
+![GitHub Release Date](https://img.shields.io/github/release-date/sergiocorreia/stata-require)
+![GitHub commits since latest release (by date)](https://img.shields.io/github/commits-since/sergiocorreia/stata-require/latest)
+![StataMin](https://img.shields.io/badge/stata-%3E%3D%2013.1-blue)
+
 
 Ensure all required Stata packages and their specific versions are installed; similar to Python's `requirements`
 
+-----------
+
+## Recent Updates
+
+* **version 1.0.0 27jun2023**:
+    - First stable release
 
 ## Install
 
@@ -23,26 +35,37 @@ net install require, from("c:\git\stata-require\src")
 
 ## Usage
 
-Simple usage:
+The most common usage is to use require to ensure that a minimum version is installed:
 
 ```stata
-require ftools
-require reghdfe
+require ivreg2 >= 4.1.0
+require ftools >= 2.48.0
+require reghdfe>= 6.12.1
 ```
 
-Use a specific location:
+This will ensure that whoever runs the do-file is not using an outdated version of user packages.
+
+You can also require exact versions:
 
 ```stata
-require ftools, from("https://github.com/sergiocorreia/ftools/raw/master/src/")
-require reghdfe, from(https://github.com/sergiocorreia/reghdfe/raw/master/src/)
+require ivreg2 == 4.1.0
 ```
 
-Require a minimum version, install if needed:
+And can install automatically if needed:
 
 ```stata
-require ftools  >= 2.48.0 , install from("https://github.com/sergiocorreia/ftools/raw/master/src/")
-require reghdfe >= 6.12.1 , install from(https://github.com/sergiocorreia/reghdfe/raw/master/src/)
+require ivreg2 >= 4.1.0  , install
+require ftools >= 2.48.0 , install from("https://github.com/sergiocorreia/ftools/raw/master/src/")
+require reghdfe>= 6.12.1 , install from(https://github.com/sergiocorreia/reghdfe/raw/master/src/)
 ```
+
+Lastly, you can just use it to ensure the package is installed without specifying a version:
+
+```stata
+require ivreg2
+```
+
+### Advanced usage
 
 Require an exact version, using Github tags (WIP):
 
@@ -50,11 +73,7 @@ Require an exact version, using Github tags (WIP):
 require reghdfe == 6.12.1 , install from(https://github.com/sergiocorreia/reghdfe/releases)
 ```
 
-Use a `requirements.txt` file, and install if needed
-
-```
-require using "$here/code/requirements.txt", install
-```
+For large projects, such as a research paper, the recommended usage is to first create a `requirements.txt` file:
 
 ```
 <<< contents of requirements.txt <<<<
@@ -72,17 +91,21 @@ lpdensity	>= 1.0		, from(https://raw.githubusercontent.com/nppackages/lpdensity/
 >>>
 ```
 
+And then add this line to the top of every do-file (or at the beginning of a master do-file):
+
+```
+require using "requirements.txt", install
+```
+
+
 ## Misc. notes
 
-We also recommend using the `here` command: https://github.com/korenmiklos/here
+We also recommend using the [`setroot`](https://github.com/sergiocorreia/stata-setroot) (based on [`here`](https://github.com/korenmiklos/here)).
 
 (Note that `$here` currently includes trailing `/` so we can't do `use $here/dataset` and instead must do `use ${here}dataset`.
 
 
-## Packages not supported by `require` (lacking version numbers):
+## Coverage of user packages from SSC
 
-- `rtfutil`
-- `sencode`
-- `listtab`
-
+![performance](test/performance.png)
 

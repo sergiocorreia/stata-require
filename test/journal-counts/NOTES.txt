@@ -1,0 +1,12 @@
+The file "cmd_count.csv" graciously shared by:
+
+Sebastian Kranz
+Ulm University
+sebastian.kranz@uni-ulm.de
+
+Based on his project:
+
+FINDING ECONOMIC ARTICLES WITH DATA UND STATA REPRODUCTIONS
+https://ejd.econ.mathematik.uni-ulm.de/
+http://skranz.github.io/r/2023/01/23/FindingEconomicArticles5.html
+
