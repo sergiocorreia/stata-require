@@ -51,7 +51,7 @@ You can also require exact versions:
 require ivreg2 == 4.1.0
 ```
 
-And can install automatically if needed:
+And install missing packages automatically if needed:
 
 ```stata
 require ivreg2 >= 4.1.0  , install
