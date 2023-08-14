@@ -1,8 +1,18 @@
-*! version 1.0.0 27jun2023
+*! version 1.1.0 13aug2023
 
 program require
+
+	* Intercept "require [using], list"
+	*syntax [using/]	, list [exact] [path(string)] [replace] [date] [stata]
+	cap syntax [anything(everything)], list [*]
+	if (!c(rc)) {
+		List `0'
+		exit
+	}
+
 	* Intercept "require using ..."
-	cap syntax using, [INSTALL STRICT] // [*]
+	* syntax using, [INSTALL STRICT]
+	cap syntax using, [INSTALL STRICT]
 	if (!c(rc)) {
 		RequireFile `using', `install' `strict' // `options'
 		exit
@@ -133,8 +143,8 @@ program GetFilename
 	}
 
 	* Ad-hoc workarounds for SJ packages (TODO: improve)
-	if ("`package'" == "gr0070.ado") fn = "scheme-plottig.scheme"
-	if ("`package'" == "pr0062_2.ado") fn = "texdoc.ado"
+	if ("`package'" == "gr0070.ado") loc fn = "scheme-plottig.scheme"
+	if ("`package'" == "pr0062_2.ado") loc fn = "texdoc.ado"
 
 	* Ad-hoc workarounds for SSC packages
 	if ("`package'" == "brewscheme") loc fn = "brewscheme.sthlp" // the starbang line on the .ado is malformed
@@ -212,6 +222,78 @@ program GetFilename
 	c_local filename "`fn'"
 end
 
+
+cap program drop List
+program define List
+	syntax [using/]	, list [exact] [path(string)] [replace] [date] [stata]
+	
+	if ("`path'" == "") loc path = c(sysdir_plus)
+	loc trk_file = "`path'" + "stata.trk" // c(dirsep) ?
+	confirm file "`trk_file'"
+
+	* Stata line
+	if ("`stata'" != "") {
+		loc stata_line "    stata >= `c(stata_version)'"
+		di as text "`stata_line'"
+	}
+
+	loc symbol = cond("`exact'"=="", ">=", "==")
+
+	tempname fh
+	file open `fh' using `"`trk_file'"', read
+	file read `fh' line
+	loc i 0
+	while (r(eof)==0) {
+		*display %4.0f `linenum' _asis `"  `macval(line)'"'
+		loc line `"`macval(line)'"'
+		loc first_char = substr(`"`line'"', 1, 1)
+		if ("`first_char'" == "N") {
+			loc n = strlen(`"`line'"')
+			loc pkg = substr(`"`line'"', 3, `n' - 6)
+
+			* Custom replacements for SJ-based packages (TODO: Improve/move to another program)
+			if (strpos("`pkg'", "gr41_")==1) loc pkg "distplot" // type: findit distplot
+			if (strpos("`pkg'", "st0610")==1) loc pkg "pwlaw"
+
+			cap require `pkg'
+			if (c(rc)) {
+				loc color "{err}"
+				loc version "."
+			}
+			else {
+				loc color "{txt}"
+				loc version = s(version)
+			}
+
+
+
+			if ("`version'" == ".") {
+				loc line "    `pkg'"
+			}
+			else {
+				loc line "    `pkg' `symbol' `version'"
+			}
+			loc ++i
+			loc line`i' `"`line'"'
+			di as text "`color'`line'"
+		}
+		file read `fh' line
+	}
+	file close `fh'
+	di as text
+
+	* Save to file if needed
+	if ("`using'" != "") {
+		loc n `i'
+		file open `fh' using `"`using'"', write text `replace'
+		if ("`stata'"!="") file write `fh' "`stata_line'" _n
+		forval i = 1/`n' {
+			file write `fh' "`line`i''" _n
+		}
+		file close `fh'
+		di as text "file {browse `using'} saved"
+	}
+end
 
 
 program Install
@@ -631,6 +713,10 @@ real scalar store_version(
 	}
 	
 	v = sprintf("%f.%f.%f", major, minor, patch)
+	if (subinstr(v, ".", "")=="") {
+		v = "."
+	}
+
 	d = sprintf("%f%s%f", day, month, year)
 	d = strofreal(date(d, "DMY"), "%td") // standardize 1mar2020 into 01mar2020
 

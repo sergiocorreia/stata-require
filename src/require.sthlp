@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 1.0.0 27jun2023}{...}
+{* *! version 1.1.0 13aug2023}{...}
 {viewerjumpto "Syntax" "require##syntax"}{...}
 {viewerjumpto "Description" "require##description"}{...}
 {viewerjumpto "Options" "require##options"}{...}
@@ -17,38 +17,52 @@
 {title:Syntax}
 
 {pstd}
-{bf:Require minimum version:}
+{bf:Require package is installed with a minimum or exact version:}
 
 {p 8 15 2}
-{cmd:require} {it:package}{cmd:>=}{it:version}{cmd:,}
-[{opt install}
+{cmd:require} {it:package} {cmd:>=} {it:version}
+[{cmd:,}
+{opt install}
+{opt from(url)}]
+{p_end}
+
+{p 8 15 2}
+{cmd:require} {it:package} {cmd:==} {it:version}
+[{cmd:,}
+{opt install}
 {opt from(url)}]
 {p_end}
 
 {pstd}
-{bf:Require exact version:}
+{bf:Only require package is installed:}
 
 {p 8 15 2}
-{cmd:require} {it:package}{cmd:==}{it:version}{cmd:,}
-[{opt install}
+{cmd:require} {it:package}
+[{cmd:,}
+{opt install}
 {opt from(url)}]
 {p_end}
 
 {pstd}
-{bf:Only ensure package is installed:}
+{bf:Require multiple packages with a requirements file:}
 
 {p 8 15 2}
-{cmd:require} {it:package}{cmd:,}
-[{opt install}
-{opt from(url)}]
+{cmd:require} {cmd:using} {it:requirements.txt}
+[{cmd:,}
+{opt install}]
 {p_end}
 
 {pstd}
-{bf:Using requirements file for multiple dependencies:}
+{bf:Create a requirements file from currently installed packages:}
+
+{p 8 15 2}
+{cmd:require}{cmd:,}
+{opt list} [{cmd:exact} {opt path(string)} {opt stata}]
+{p_end}
 
 {p 8 15 2}
 {cmd:require} {cmd:using} {it:requirements.txt}{cmd:,}
-[{opt install}]
+{opt list} [{cmd:exact} {opt path(string)} {opt stata}] [{cmd:replace}]
 {p_end}
 
 
@@ -59,10 +73,17 @@
 {syntab:Main}
 {synopt: {opt install}}install package if not present or wrong version(from SSC by default){p_end}
 {synopt: {opt from(url)}}location of the package (e.g.: a Github URL){p_end}
+
+{syntab:Creating requirements file}
+{synopt: {opt exact}}use exact requirements (==) instead of minimum (>=){p_end}
+{synopt: {opt path}}use alternative path for the folder containing the installed ado-files{p_end}
+{synopt: {opt stata}}include currently-installed Stata version as requirement{p_end}
+{synopt: {opt replace}}replace using file if it already exists{p_end}
+
 {syntab:Developer options}
 {synopt: {opt strict}}raise an error if the starbang couldn't be parsed even when not checking versions{p_end}
 {synopt: {opt verbose}}show each regex attempt{p_end}
-{synopt: {opt debug(str)}}instead of parsing the file, treat the provided string as the starbang{p_end}
+{synopt: {opt debug(str)}}instead of parsing the file, treat the provided string as the starbang line{p_end}
 
 
 {marker description}{...}
@@ -128,6 +149,15 @@ First, you should create a text file such as:{p_end}
 
 {phang2}{cmd:require using requirements.txt, install}{p_end}
 
+{pstd}To facilitate using a requirements file, you can display the currently installed packages
+with:{p_end}
+
+{phang2}{cmd:require, list}{p_end}
+
+{pstd}And can also save this list to a file with:{p_end}
+
+{phang2}{cmd:require using requirements.txt, list}{p_end}
+
 
 {marker results}{...}
 {title:Stored results}
@@ -176,3 +206,4 @@ Email: {browse "mailto:matt.seay@frb.gov":matt.seay@frb.gov}
 
 {pstd}
 Thank you in advance for bug-spotting and feature suggestions.{p_end}
+
