@@ -3,7 +3,7 @@
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/sergiocorreia/stata-require?label=last%20version)
 ![GitHub Release Date](https://img.shields.io/github/release-date/sergiocorreia/stata-require)
 ![GitHub commits since latest release (by date)](https://img.shields.io/github/commits-since/sergiocorreia/stata-require/latest)
-![StataMin](https://img.shields.io/badge/stata-%3E%3D%2013.1-blue)
+![StataMin](https://img.shields.io/badge/stata-%3E%3D%2015.0-blue)
 
 
 Ensure all required Stata packages and their specific versions are installed; similar to Python's `requirements`
