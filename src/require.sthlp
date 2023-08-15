@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 1.1.0 13aug2023}{...}
+{* *! version 1.1.1 14aug2023}{...}
 {viewerjumpto "Syntax" "require##syntax"}{...}
 {viewerjumpto "Description" "require##description"}{...}
 {viewerjumpto "Options" "require##options"}{...}

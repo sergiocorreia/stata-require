@@ -1,4 +1,4 @@
-*! version 1.1.0 13aug2023
+*! version 1.1.1 14aug2023
 
 program require
 
@@ -74,6 +74,7 @@ program RequireFile
 
 		if (strlen(`"`line'"')==0) continue
 		if (strpos(`"`line'"', "#")==1) continue
+		if (strpos(`"`line'"', "*")==1) continue
 
 		loc 0 `line'
 		syntax anything(name=ado_extra equalok), [FROM(string)]
