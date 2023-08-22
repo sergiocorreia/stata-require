@@ -9,8 +9,10 @@ d
 d For more information, see https://github.com/sergiocorreia/stata-require
 d
 d KW: reproductible-research
+d KW: which
+d KW: ssc
 d
-d Requires: Stata version 15.0
+d Requires: Stata version 14.0
 d
 d Distribution-Date: 20230814
 d
