@@ -1,5 +1,11 @@
 {smcl}
-{* *! version 1.1.1 14aug2023}{...}
+{* *! version 1.2.0 26aug2023}{...}
+{vieweralsosee "which" "help which"}{...}
+{vieweralsosee "ssc" "help ssc"}{...}
+{vieweralsosee "" "--"}{...}
+{vieweralsosee "setroot" "setroot"}{...}
+{vieweralsosee "packagesearch" "packagesearch"}{...}
+{vieweralsosee "ietoolkit" "ietoolkit"}{...}
 {viewerjumpto "Syntax" "require##syntax"}{...}
 {viewerjumpto "Description" "require##description"}{...}
 {viewerjumpto "Options" "require##options"}{...}
@@ -10,59 +16,55 @@
 {title:Title}
 
 {p2colset 5 16 18 2}{...}
-{p2col :{cmd:require} {hline 2}} Ensure that installed packages have a minimum or exact version.{p_end}
+{p2col :{cmd:require} {hline 2}}Ensure that installed packages have a minimum or exact version.{p_end}
+{p2col:}({browse "http://scorreia.com/research/require.pdf":View PDF article}){p_end}
 {p2colreset}{...}
 
 {marker syntax}{...}
 {title:Syntax}
 
 {pstd}
-{bf:Require package is installed with a minimum or exact version:}
+Require that a package is installed with a minimum or exact version:
 
 {p 8 15 2}
-{cmd:require} {it:package} {cmd:>=} {it:version}
+{cmd:require} {it:package} [{cmd:>=} | {cmd:==}] {it:version}
 [{cmd:,}
 {opt install}
-{opt from(url)}]
-{p_end}
-
-{p 8 15 2}
-{cmd:require} {it:package} {cmd:==} {it:version}
-[{cmd:,}
-{opt install}
-{opt from(url)}]
+{opt adopath(dirname)}
+{opt from(location)}
+{help require##dev_options:dev_options}]
 {p_end}
 
 {pstd}
-{bf:Only require package is installed:}
+Require that a package is installed  without inspecting version:
 
-{p 8 15 2}
-{cmd:require} {it:package}
+{p2colset 9 42 15 2}{...}
+{p2col:{cmd:require} {it:package}}
 [{cmd:,}
 {opt install}
-{opt from(url)}]
+{opt adopath(dirname)}
+{opt from(location)}
+{help require##dev_options:dev_options}]
 {p_end}
+{p2colreset}{...}
 
 {pstd}
-{bf:Require multiple packages with a requirements file:}
+Require multiple packages through a requirements file:
 
 {p 8 15 2}
 {cmd:require} {cmd:using} {it:requirements.txt}
 [{cmd:,}
-{opt install}]
+{opt install}
+{opt adopath(dirname)}]
 {p_end}
 
 {pstd}
-{bf:Create a requirements file from currently installed packages:}
+Create requirements file from currently installed packages:
 
 {p 8 15 2}
-{cmd:require}{cmd:,}
-{opt list} [{cmd:exact} {opt path(string)} {opt stata}]
-{p_end}
-
-{p 8 15 2}
-{cmd:require} {cmd:using} {it:requirements.txt}{cmd:,}
-{opt list} [{cmd:exact} {opt path(string)} {opt stata}] [{cmd:replace}]
+{cmd:require} [{cmd:using} {it:requirements.txt}] {cmd:,}
+{opt list} [{opt adopath(dirname)}
+{help require##create_options:create_options}]
 {p_end}
 
 
@@ -70,20 +72,28 @@
 {synoptset 22 tabbed}{...}
 {synopthdr}
 {synoptline}
+{marker main_options}{...}
 {syntab:Main}
-{synopt: {opt install}}install package if not present or wrong version(from SSC by default){p_end}
-{synopt: {opt from(url)}}location of the package (e.g.: a Github URL){p_end}
+{synopt: {opt install}}install package if not present or if version requirements are not met{p_end}
+{synopt: {opt adopath(dirname)}}use alternative path for ado-files (when requiring, installing, or listing){p_end}
+{synopt: {opt from(location)}}location of the installable package; either a URL, a directory, or "ssc" (default){p_end}
 
-{syntab:Creating requirements file}
-{synopt: {opt exact}}use exact requirements (==) instead of minimum (>=){p_end}
-{synopt: {opt path}}use alternative path for the folder containing the installed ado-files{p_end}
-{synopt: {opt stata}}include currently-installed Stata version as requirement{p_end}
+{marker create_options}{...}
+{syntab:Listing requirements or creating requirements file}
+{p2coldent:* {opt list}}list/create requirements instead of enforcing them{p_end}
+{synopt: {opt save}}alternative to {it:using}; saves requirements file with default filename ({it:requirements.txt}){p_end}
 {synopt: {opt replace}}replace using file if it already exists{p_end}
+{synopt: {opt exact}}use exact requirements (==) instead of minimum (>=){p_end}
+{synopt: {opt stata}}add a line requiring the currently-installed Stata version{p_end}
+{synopt: {opt dopath(dirname)}}use {help packagesearch:packagesearch} to search {it:dirname} for do-files and extract package requirements (experimental){p_end}
 
 {syntab:Developer options}
-{synopt: {opt strict}}raise an error if the starbang couldn't be parsed even when not checking versions{p_end}
+{synopt: {opt strict}}raise an error if the version string couldn't be parsed even when not checking versions{p_end}
 {synopt: {opt verbose}}show each regex attempt{p_end}
 {synopt: {opt debug(str)}}instead of parsing the file, treat the provided string as the starbang line{p_end}
+{synoptline}
+{p2colreset}{...}
+{p 4 6 2}* {opt list} is required when creating requirement files.{p_end}
 
 
 {marker description}{...}
@@ -124,7 +134,7 @@ Thus, "version 1" becomes "version 1.0.0", indicating the major version, minor v
 {opt install} Will install if package does not exist or version requirements are not met. By default installs from SSC.
 
 {phang}
-{opt from(url)} Alternative installation path.
+{opt from(location)} Alternative installation path.
 
 {marker examples}{...}
 {title:Examples}
@@ -198,12 +208,17 @@ Email: {browse "mailto:matt.seay@frb.gov":matt.seay@frb.gov}
 {pstd}Links to online documentation & code:{p_end}
 
 {p2colset 8 10 10 2}{...}
-{p2col: -}{browse "https://github.com/sergiocorreia/stata-require":Github page}: code repository, issues, etc.{p_end}
+{p2col: -}{browse "http://scorreia.com/research/require.pdf":PDF article} for more examples and in-depth explanations{p_end}
+{p2col: -}{browse "https://github.com/sergiocorreia/stata-require":Github page} for the code repository, to report issues, etc.{p_end}
 {p2colreset}{...}
 
 {marker acknowledgements}{...}
 {title:Acknowledgements}
 
 {pstd}
-Thank you in advance for bug-spotting and feature suggestions.{p_end}
+We thank Sebastian Kranz for helping us access the Stata code contained in the replication packages published by the {it:American Economic Association} journals,
+{it:the Review of Economic Studies}, and {it:the Review of Economics and Statistics}.{p_end}
+
+{pstd}
+We are also grateful to  Paulo Guimarães, Miklós Koren, Julian Reif, Luis Eduardo San Martin, Lars Vilhuber, and seminar participants at the 2023 Stata Conference for their valuable suggestions.{p_end}
 

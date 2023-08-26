@@ -1,10 +1,9 @@
-*! version 1.1.1 14aug2023
+*! version 1.2.0 26aug2023
 
 program require
 	version 14
 	
 	* Intercept "require [using], list"
-	*syntax [using/]	, list [exact] [path(string)] [replace] [date] [stata]
 	cap syntax [anything(everything)], list [*]
 	if (!c(rc)) {
 		List `0'
@@ -88,7 +87,7 @@ end
 
 
 program	GetVersion, sclass
-	syntax anything(name=package), [PATH(string) STRICT VERBOSE DEBUG(string)]
+	syntax anything(name=package), [ADOPATH(string) STRICT VERBOSE DEBUG(string)]
 	sreturn clear
 
 	* If we are debugging, we just try to parse a given line
@@ -106,7 +105,7 @@ program	GetVersion, sclass
 	cap // we must reset the error code to zero else it might get used outside this program (unsure why)
 
 	* Which filename to search
-	GetFilename `package' , path("`path'") `strict'
+	GetFilename `package' , adopath("`adopath'") `strict'
 	if ("`filename'" == "") {
 		if ("`strict'" != "") {
 			di as error `"require: unsure what file to search (package `package')"'
@@ -118,13 +117,13 @@ program	GetVersion, sclass
 	}
 
 	* Search the filename
-	mata: get_version("`package'", "`filename'", "`path'", "`strict'"!="", "`verbose'"!="")
+	mata: get_version("`package'", "`filename'", "`adopath'", "`strict'"!="", "`verbose'"!="")
 end
 
 
 
 program GetFilename
-	syntax anything(name=package), [PATH(string) STRICT]
+	syntax anything(name=package), [ADOPATH(string) STRICT]
 
 	* Search for an .ado by default
 	loc fn "`package'.ado"
@@ -137,10 +136,10 @@ program GetFilename
 	}
 
 	* If the .ado doesn't exist, try .sthlp (but only if it does exist!)
-	cap findfile "`fn'", path("`path'")
+	cap findfile "`fn'", path("`adopath'")
 	if (c(rc)) {
 		loc candidate "`package'.sthlp"
-		cap findfile "`candidate'", path("`path'")
+		cap findfile "`candidate'", path("`adopath'")
 		if (!c(rc)) loc fn "`candidate'"
 	}
 
@@ -227,11 +226,16 @@ end
 
 cap program drop List
 program define List
-	syntax [using/]	, list [exact] [path(string)] [replace] [date] [stata]
-	
-	if ("`path'" == "") loc path = c(sysdir_plus)
-	loc trk_file = "`path'" + "stata.trk" // c(dirsep) ?
+	syntax [using/]	, list [adopath(string)] [replace save] [exact] [date] [stata] [dopath(string)]
+
+	if ("`adopath'" == "") loc adopath = c(sysdir_plus)
+	loc trk_file = "`adopath'" + "stata.trk" // c(dirsep) ?
 	confirm file "`trk_file'"
+
+	* Default using
+	if ("`save'" != "" & "`using'" == "") {
+		loc using "requirements.txt"
+	}
 
 	* Stata line
 	if ("`stata'" != "") {
@@ -241,6 +245,14 @@ program define List
 
 	loc symbol = cond("`exact'"=="", ">=", "==")
 
+	loc header1 `"* Created on `c(current_date)' by `c(username)' @ `c(hostname)' on `c(os)'-`c(osdtl)'"'
+	loc header2 `"* Edit this file to remove redundant lines"'
+	loc header3 `"* And save as "requirements.txt""'
+
+	di as text `"`header1'"'
+	di as text `"`header2'"'
+	di as text `"`header3'"'
+	
 	tempname fh
 	file open `fh' using `"`trk_file'"', read
 	file read `fh' line
@@ -267,14 +279,13 @@ program define List
 				loc version = s(version)
 			}
 
-
-
 			if ("`version'" == ".") {
 				loc line "    `pkg'"
 			}
 			else {
 				loc line "    `pkg' `symbol' `version'"
 			}
+
 			loc ++i
 			loc line`i' `"`line'"'
 			di as text "`color'`line'"
@@ -288,7 +299,13 @@ program define List
 	if ("`using'" != "") {
 		loc n `i'
 		file open `fh' using `"`using'"', write text `replace'
+
+		file write `fh' `"`header1'"' _n
+		file write `fh' `"`header2'"' _n
+		file write `fh' `"* Then, include this line in your do-file:"' _n
+		file write `fh' `"* require using `using', install"' _n _n
 		if ("`stata'"!="") file write `fh' "`stata_line'" _n
+
 		forval i = 1/`n' {
 			file write `fh' "`line`i''" _n
 		}
@@ -326,7 +343,7 @@ local G ustrregexs
 
 mata:
 mata set matastrict on
-void get_version(string scalar package, string scalar filename, string scalar path, real scalar strict, real scalar verbose)
+void get_version(string scalar package, string scalar filename, string scalar adopath, real scalar strict, real scalar verbose)
 {
 	real scalar fh, ok, i, j
 	string scalar full_fn, line, first_char, url
@@ -336,11 +353,11 @@ void get_version(string scalar package, string scalar filename, string scalar pa
 	assert(filename != "")
 
 	// Load file
-	if (path == "") {
+	if (adopath == "") {
 		full_fn = findfile(filename, c("adopath"))
 	}
 	else {
-		full_fn = findfile(filename, path)
+		full_fn = findfile(filename, adopath)
 	}
 
 	if (full_fn == "") {

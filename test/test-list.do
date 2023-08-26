@@ -21,7 +21,7 @@
 	require using ignore.txt, list replace stata exact
 	cap noi require using ignore.txt, list
 
-	di as text "require,list test completed successfully"
+	di as text `""require, list" test completed successfully"'
 
 exit
 
