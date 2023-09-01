@@ -1,6 +1,7 @@
 * ===========================================================================
 * Test package against lines in ground-truth.tsv
 * ===========================================================================
+stopit
 
 * Note:
 * "ground-truth.tsv" is based on a manual review of "ground-truth-pending.tsv"

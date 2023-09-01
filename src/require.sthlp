@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 1.2.0 26aug2023}{...}
+{* *! version 1.3.0 31aug2023}{...}
 {vieweralsosee "which" "help which"}{...}
 {vieweralsosee "ssc" "help ssc"}{...}
 {vieweralsosee "" "--"}{...}
@@ -30,8 +30,8 @@ Require that a package is installed with a minimum or exact version:
 {cmd:require} {it:package} [{cmd:>=} | {cmd:==}] {it:version}
 [{cmd:,}
 {opt install}
-{opt adopath(dirname)}
 {opt from(location)}
+{opt adopath(dirname)}
 {help require##dev_options:dev_options}]
 {p_end}
 
@@ -42,8 +42,8 @@ Require that a package is installed  without inspecting version:
 {p2col:{cmd:require} {it:package}}
 [{cmd:,}
 {opt install}
-{opt adopath(dirname)}
 {opt from(location)}
+{opt adopath(dirname)}
 {help require##dev_options:dev_options}]
 {p_end}
 {p2colreset}{...}
@@ -75,8 +75,8 @@ Create requirements file from currently installed packages:
 {marker main_options}{...}
 {syntab:Main}
 {synopt: {opt install}}install package if not present or if version requirements are not met{p_end}
-{synopt: {opt adopath(dirname)}}use alternative path for ado-files (when requiring, installing, or listing){p_end}
-{synopt: {opt from(location)}}location of the installable package; either a URL, a directory, or "ssc" (default){p_end}
+{synopt: {opt from(location)}}location of the installable package; either a URL, a directory, or "SSC" (default){p_end}
+{synopt: {opt adopath(dirname)}}use alternative directory when searching/installing packages. Also accepts keywords "PLUS" , "SITE", and "PERSONAL". Default is to search c(adopath) and install into what "net query" specifies.{p_end}
 
 {marker create_options}{...}
 {syntab:Listing requirements or creating requirements file}

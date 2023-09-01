@@ -12,7 +12,12 @@ Ensure all required Stata packages and their specific versions are installed; si
 
 ## Recent Updates
 
-* **version 1.0.0 27jun2023**:
+- **version 1.3.0 01sep2023**:
+    - Refactored code
+    - Added `list` option
+    - Better support for version strings in help files
+    - Added tests based on certification scripts
+- **version 1.0.0 27jun2023**:
     - First stable release
 
 ## Install
