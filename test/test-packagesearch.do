@@ -1,3 +1,6 @@
+exit
+* Not fully tested
+
 stopit
 * ===========================================================================
 * Test "require, list codepath()" functionality

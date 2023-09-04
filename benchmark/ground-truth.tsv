@@ -59,7 +59,7 @@ eret2	0.049756195	0.065396905	0.015182864	eret2.ado	*! version 1.0.0, Ben Jann, 
 lincomest	0.11941487	0.060963217	0.023158187	lincomest.ado	*! Date: 18 July 2016	1		X18jul2016	1
 qreg2	0.1791223	0.059854798	0.029693922	qreg2.ado	* Version 4.00 - 31 Aug 2020	1	4.0.0	X31aug2020	1
 stack	0.3084884	0.058746375	0.00357018	stack.ado	*! version 3.1.4  19sep1997  Statalist distribution	1	3.1.4	X19sep1997	1
-adjust	0.099512391	0.058376901	0.003915682	adjust.ado	*! version 1.3.0  7Oct98    STB-46 sg89.2 fix for var=-#	1	1.3.0	X7oct1998	1
+adjust	0.099512391	0.058376901	0.003915682	adjust.ado	*! version 1.3.0  7Oct98    STB-46 sg89.2 fix for var=-#	1	1.3.0	X07oct1998	1
 sutex	0.44780576	0.058376901	0.018253988	sutex.ado	**************************************	0			1
 stop	0.67668426	0.058376901	0.00357018	stop.ado	*! Version 1.0.2 22may2020	1	1.0.2	X22may2020	1
 qqvalue	0.079609908	0.057268478	0.011113626	qqvalue.ado	*! Date: 08 October 2012	1		X08oct2012	1

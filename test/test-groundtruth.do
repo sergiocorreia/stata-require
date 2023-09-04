@@ -1,7 +1,6 @@
 * ===========================================================================
 * Test package against lines in ground-truth.tsv
 * ===========================================================================
-stopit
 
 * Note:
 * "ground-truth.tsv" is based on a manual review of "ground-truth-pending.tsv"
@@ -13,12 +12,19 @@ stopit
 	clear all
 	cls
 
+	** * Install from ../src
+	mata: st_local("path", pathresolve(pwd(), "../src"))
+	mata: assert(direxists("`path'"))
 	cap ado uninstall require
-	net install require, from("C:/Git/stata-require/src")
+	net install require, from("`path'")
 	which require
 
-	import delim "./ground-truth.tsv", delim(tab) asdouble varnames(1) clear
+
+	import delim "../benchmark/ground-truth.tsv", delim(tab) asdouble varnames(1) clear
 	replace version_date = subinstr(version_date, "X", "", 1)
+
+	*keep if inlist(package, "adjust", "mdesc", "newey2")
+	*keep if inlist(package, "b1x2", "fsum", "ivreg2hdfe", "spmap", "winsor2")
 
 	gen byte ok = .
 	loc n = c(N)
@@ -37,37 +43,59 @@ stopit
 		}
 
 		di as text "processing `i' `package'"
-		cap require `package', debug(`"`line'"')
+		loc cmd require `package', debug(`"`line'"')
+		*di as input `"`cmd'"'
+		*`cmd'
+		*sreturn list
+
+		cap // reset any previous error codes
+		cap `cmd'
 
 		* Intercept errors (triggered by debug option only)
-		if (inlist(c(rc), 2222)) {
+		* 2221 = New (v1.3) 2222 = Old (v1)
+		if (inlist(c(rc), 2221, 2222)) {
 			qui replace ok = 0 in `i'
 			continue
 		}
-		assert !c(rc)
+		_assert !c(rc), msg("not expecting RC here")
 
-
-		*sreturn list
 		loc ok 1
-		if (s(package) != "`package'") loc ok 0
+		if ("`s(package)'" != "`package'") {
+			*asd1
+			loc ok 0
+		}
 
 		* a) if there's a version we must match it
 		if ("`version'" != "") {
-			if (s(version) != "`version'") loc ok 0
+			if (s(version) != "`version'") {
+				*asd2
+				loc ok 0
+			}
 			* and we can keep the date missing but cannot have it wrong
-			if (s(version_date) != ".") {
-				if (s(version_date) != "`version_date'") loc ok 0
+			if ("`s(version_date)'" != "" & "`version_date'" != "") {
+				if ("`s(version_date)'" != "`version_date'") {
+					*asd3
+					loc ok 0
+				}
 			}
 		}
 		* b) if there's no version, we must have a nonmissing version date and match it
 		else {
-			if (s(version_date) == ".") loc ok 0
-			if (s(version_date) != "`version_date'") loc ok 0
+			if ("`s(version_date)'" == ".") {
+				*asd4
+				loc ok 0
+			}
+			if ("`s(version_date)'" != "`version_date'") {
+				*asd5
+				loc ok 0
+			}
 		}
 
+		*assert `ok'
 		qui replace ok = `ok' in `i'
 	}
 
+	save "../benchmark/performance-detailed", replace
 	di as text "Done!"
 
 	tab is_valid
@@ -110,8 +138,26 @@ stopit
 	replace y = `ok_usage' in 5
 
 	compress
-	save "performance", replace
+	save "../benchmark/performance", replace
 
+exit
 
+* To validate regressions against older versions, you can do something like:
+* Run with old version, rename performance-detailed to performance-detailed-old
+* Run with new version, open "performance-detailed"
+* Run:
 
+cd "C:\Git\stata-require\benchmark"
+cls
+clear all
+use performance-detailed, clear
+rename (filename starbang is_valid version version_date manual_review ok) (new_=)
+merge 1:1 package using "performance-detailed-old.dta", keep(match) // assert(match)
+*br if ok!=new_ok
+tab ok new_ok
 
+order _all, alpha
+order package ok
+loc vars package *filename *is_valid *version *version_date *manual_review *ok // *starbang 
+li `vars' if ok==0 & new_ok==1
+li `vars' if ok==1 & new_ok==0

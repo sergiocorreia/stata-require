@@ -92,6 +92,7 @@ program require, sclass
 
 	if (c(rc)) {
 		if (`can_install') {
+			cap // clear out error codes
 			Install `package', adopath(`adopath') from(`from')
 			require `requirement', adopath(`adopath') `verbose' `strict'
 			exit
@@ -112,6 +113,14 @@ program require, sclass
 		}
 	}
 
+	* Workaround for bug in Stata:
+	* mata findfile() uses filexists() which uses _fopen()
+	* however, instead of only checking for error code -601 (file not found), it checks for all error codes
+	* which includes: "fopen():  3611  too many open files"
+	* which is sometimes returned if a previous fopen() was not followed by fclose()
+	cap mata: fclose(1)
+	cap // we must reset the error code to zero else it might get used outside this program (unsure why)
+	
 	* Step B - Can we parse the version string?
 	mata: store_rc(get_version("`package'", "`filename'", "`r(fn)'", "`verbose'"!="")) // writes s() and `rc'
 
@@ -178,9 +187,8 @@ program RequireFile
 end
 
 
-cap program drop List
 program List
-	syntax [using/]	, list [adopath(string)] [replace save] [exact] [date] [stata] [dopath(string)]
+	syntax [using/]	, list [adopath(string)] [replace save] [exact] [date] [stata] [adopath(string)]
 
 	if ("`adopath'" == "") loc adopath = c(sysdir_plus)
 	loc trk_file = "`adopath'" + "stata.trk" // c(dirsep) ?
@@ -223,7 +231,7 @@ program List
 			if (strpos("`pkg'", "gr41_")==1) loc pkg "distplot" // type: findit distplot
 			if (strpos("`pkg'", "st0610")==1) loc pkg "pwlaw"
 
-			cap require `pkg', adopath(`adopath')
+			cap require `pkg', adopath("`adopath'")
 			if (c(rc)) {
 				loc color "{err}"
 				loc version "."
@@ -320,7 +328,7 @@ program RaiseMataError
 	syntax, rc(integer) [REQuirement(string)]
 
 	* Escape SMCL comments
-	mata: st_local("raw_line", escape_line("`s(raw_line)'"))
+	mata: st_local("raw_line", escape_line(`"`s(raw_line)'"'))
 	
 	if (`rc'==0) {
 		exit // No errors
@@ -381,6 +389,7 @@ program GetFilename
 		cap findfile "`candidate'", path("`adopath'")
 		if (!c(rc)) loc fn "`candidate'"
 	}
+	cap // we must reset the error code to zero else it might get used outside this program
 
 	* Ad-hoc workarounds for SJ packages (TODO: improve)
 	if ("`package'" == "gr0070.ado") loc fn = "scheme-plottig.scheme"
@@ -620,11 +629,12 @@ real scalar inner_get_version(string scalar line, string scalar package, string 
 	START = "^[*]! +version +"
 	VERSION = "[v]?(\d{1,2})\.(\d{1,3})\.(\d{1,3})[,]?"
 	SPACE = " +"
-	YEAR = "(?:19|20)([0-39][0-9])"
+	YEAR = "(199[0-9]|20[0-3][0-9]|9[6-9])" // 199x 200x 201x 202x 203x 96-99
 	MON = "(jan|feb|ma[ry]|apr|ju[nl]|aug|sep|oct|nov|dec)"
 	SHORT_MON = "(0?[1-9]|1[012])"
 	DAY = "(0?[1-9]|[12][0-9]|3[01])"
-	AUTHOR_MID = "(?:[a-z, ]{2,} )?" // most authors have 3+ letters but fsum has 2
+	AUTHOR_MID = "(?:[a-z@, ]{2,} )?" // most authors have 3+ letters but fsum has 2
+	EMAIL = "[a-z0-9._-]{3,}@[a-z]{3,}\.[a-z.]{3,} " // xyz@xyz.xyz
 	AUTHOR_END = "(?:[a-z ]{2,}$)?"  // most authors have 3+ letters but fsum has 2
 
 	//NUM = "([0-9]+)"
@@ -789,6 +799,13 @@ real scalar inner_get_version(string scalar line, string scalar package, string 
 		line = `G'(1) + " " + `G'(3) + month + "20" + `G'(4) + " " + `G'(5)
 	}
 
+	// Convert "12/31/22" to "31dec22"
+	pat = "^(\*! +version .*) +" + SHORT_MON + "/" + DAY + "/([0-3][0-9])(| +.*)$"
+	if (`M'(line, pat)>0) {
+		month = all_months[strtoreal(`G'(2))]
+		line = `G'(1) + " " + `G'(3) + month + "20" + `G'(4) + " " + `G'(5)
+	}
+
 
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// Start main regex matching
@@ -801,6 +818,13 @@ real scalar inner_get_version(string scalar line, string scalar package, string 
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	if (verbose) printf(`"{txt}   $$ trying to parse {col 44}{txt}*! version <version> <author> <date>\n"')
 	pat = START + VERSION + SPACE + AUTHOR_MID + DAY + MON + YEAR
+	if (`M'(line, pat)>0) {
+		store_version(package, filename, full_fn, raw_line, `G'(1), `G'(2), `G'(3), `G'(4), `G'(5), `G'(6))
+		return(0)
+	}
+
+	if (verbose) printf(`"{txt}   $$ trying to parse {col 44}{txt}*! version <version> <email> <date>\n"')
+	pat = START + VERSION + SPACE + EMAIL + DAY + MON + YEAR
 	if (`M'(line, pat)>0) {
 		store_version(package, filename, full_fn, raw_line, `G'(1), `G'(2), `G'(3), `G'(4), `G'(5), `G'(6))
 		return(0)

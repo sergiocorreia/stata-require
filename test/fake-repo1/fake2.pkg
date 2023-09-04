@@ -1,0 +1,8 @@
+v 3
+
+d FAKE2
+d Requires: Stata version 14.0
+d
+d Distribution-Date: 20230814
+d
+f fake2.ado
