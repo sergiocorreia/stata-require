@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 1.3.0 31aug2023}{...}
+{* *! version 1.3.1 19sep2023}{...}
 {vieweralsosee "which" "help which"}{...}
 {vieweralsosee "ssc" "help ssc"}{...}
 {vieweralsosee "" "--"}{...}
@@ -85,7 +85,6 @@ Create requirements file from currently installed packages:
 {synopt: {opt replace}}replace using file if it already exists{p_end}
 {synopt: {opt exact}}use exact requirements (==) instead of minimum (>=){p_end}
 {synopt: {opt stata}}add a line requiring the currently-installed Stata version{p_end}
-{synopt: {opt dopath(dirname)}}use {help packagesearch:packagesearch} to search {it:dirname} for do-files and extract package requirements (experimental){p_end}
 
 {syntab:Developer options}
 {synopt: {opt strict}}raise an error if the version string couldn't be parsed even when not checking versions{p_end}

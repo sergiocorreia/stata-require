@@ -1,4 +1,4 @@
-*! version 1.3.0 31aug2023
+*! version 1.3.1 19sep2023
 
 program require, sclass
 	version 14
@@ -175,12 +175,13 @@ program RequireFile
 		if (strpos(`"`line'"', "*")==1) continue
 
 		loc 0 `line'
+		loc from_opt // Need to clear it every time!
 		syntax anything(name=ado_extra equalok), [FROM(string)]
 		if (`"`adopath'"'!="") loc adopath_opt `"adopath(`adopath')"'
 		if (`"`from'"'!="") loc from_opt `"from(`from')"'
 		if (`"`adopath_opt'`from_opt'`install'`strict'"'!="") loc comma ","
 		loc cmd `"require `ado_extra' `comma' `adopath_opt' `from_opt' `install' `strict'"'
-		di as text `"`cmd'"' 
+		di as text `"  ... `cmd'"' 
 		`cmd'
 	}
 	file close `fh'
@@ -283,12 +284,12 @@ program Install
 	syntax anything(name=ado), [ADOPATH(string) FROM(string)]
 
 	if ("`adopath'" != "") {
-		di as text "Current package install path:"
+		di as text "  ~~~ current package install path:"
 		net query
-		di as text `"Installing file on "`adopath'"; changing install path"'
+		di as text `"  ~~~ changing install path to {inp}`adopath'{txt}"'
 		loc cmd `"net set ado `adopath'"'
 		`cmd'
-		di as text "Note: you must manually change back the adopath if needed"
+		di as text "  ~~~ to change back adopath you must do e.g. {inp}net set ado {c 'g}c(sysdir_plus)'"
 	}
 	else {
 		di as text `"require: installing package {it:`ado'} in {stata "net query":default} directory ("`c(adopath)'")"'
@@ -617,7 +618,7 @@ real scalar inner_get_version(string scalar line, string scalar package, string 
 
 	string scalar raw_line, text
 	string scalar START, VERSION, YEAR, MON, SHORT_MON, DAY, SPACE
-	string scalar NUM, END, DOT, DATESEP1, DATESEP2, AUTHOR_MID, AUTHOR_END
+	string scalar AUTHOR_MID, AUTHOR_END, EMAIL // NUM, END, DOT, DATESEP1, DATESEP2
 	string scalar all_months, pat, month
 
 	raw_line = line // backup
