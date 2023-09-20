@@ -6,12 +6,15 @@
 ![StataMin](https://img.shields.io/badge/stata-%3E%3D%2015.0-blue)
 
 
-Ensure all required Stata packages and their specific versions are installed; similar to Python's `requirements`
+Ensure all required Stata packages and their specific versions are installed; similar to Python's `requirements`. See the [arXiv] draft for a detailed guide and examples.
 
 -----------
 
 ## Recent Updates
 
+- **version 1.3.1 19sep2023**:
+    - Misc. bugfixes.
+    - Paper uploaded to arXiv
 - **version 1.3.0 01sep2023**:
     - Refactored code
     - Added `list` option
@@ -22,6 +25,11 @@ Ensure all required Stata packages and their specific versions are installed; si
 
 ## Install
 
+To install from SSC (last updated for version 1.3.1):
+
+```stata
+ssc install require
+```
 
 To install from Github, type:
 
@@ -36,7 +44,6 @@ To install locally, type:
 cap ado uninstall require
 net install require, from("c:\git\stata-require\src")
 ```
-
 
 ## Usage
 
@@ -112,5 +119,7 @@ We also recommend using the [`setroot`](https://github.com/sergiocorreia/stata-s
 
 ## Coverage of user packages from SSC
 
-![performance](test/performance.png)
+As discussed in our accompanying paper ([arXiv link]), one of our key goals was to succesfully match as many user-contributed as possible, particularly those user widely by researchers. The figure below shows the package performance as of version 1.1.
+
+![performance](benchmark/performance.png)
 
