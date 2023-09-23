@@ -6,7 +6,7 @@
 ![StataMin](https://img.shields.io/badge/stata-%3E%3D%2015.0-blue)
 
 
-Ensure all required Stata packages and their specific versions are installed; similar to Python's `requirements`. See the [arXiv] draft for a detailed guide and examples.
+Ensure all required Stata packages and their specific versions are installed; similar to Python's `requirements`. For a detailed guide and examples, see the related paper on [arXiv](https://arxiv.org/pdf/2309.11058.pdf).
 
 -----------
 
@@ -14,14 +14,14 @@ Ensure all required Stata packages and their specific versions are installed; si
 
 - **version 1.3.1 19sep2023**:
     - Misc. bugfixes.
-    - Paper uploaded to arXiv
+    - Paper uploaded to [arXiv](https://arxiv.org/pdf/2309.11058.pdf).
 - **version 1.3.0 01sep2023**:
-    - Refactored code
-    - Added `list` option
-    - Better support for version strings in help files
-    - Added tests based on certification scripts
+    - Refactored code.
+    - Added `list` option.
+    - Better support for version strings in help files.
+    - Added tests based on certification scripts.
 - **version 1.0.0 27jun2023**:
-    - First stable release
+    - First stable release.
 
 ## Install
 
@@ -110,16 +110,14 @@ require using "requirements.txt", install
 ```
 
 
-## Misc. notes
+## Related packages
 
-We also recommend using the [`setroot`](https://github.com/sergiocorreia/stata-setroot) (based on [`here`](https://github.com/korenmiklos/here)).
-
-(Note that `$here` currently includes trailing `/` so we can't do `use $here/dataset` and instead must do `use ${here}dataset`.
+We also encourage users to manage their folders with the [`setroot`](https://github.com/sergiocorreia/stata-setroot) package (based on [`here`](https://github.com/korenmiklos/here) by Miklós Koren).
 
 
 ## Coverage of user packages from SSC
 
-As discussed in our accompanying paper ([arXiv link]), one of our key goals was to succesfully match as many user-contributed as possible, particularly those user widely by researchers. The figure below shows the package performance as of version 1.1.
+As discussed in our [accompanying paper](https://arxiv.org/pdf/2309.11058.pdf), one of our key goals was to succesfully match as many user-contributed as possible, particularly those user widely by researchers. Figure 2 from the paper (below) illustrates the package performance as of version 1.1.
 
 ![performance](benchmark/performance.png)
 
