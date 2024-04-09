@@ -25,40 +25,8 @@ program require, sclass
 	* Main syntax
 	syntax anything(name=requirement equalok), [INSTALL ADOPATH(string) FROM(string)] [DEBUG(string) VERBOSE STRICT]
 
-	* Extract package and minimum/required version names
-	gettoken package _: requirement, parse(">= ")
-	gettoken op required_version: _, parse(">= ")
-
 	* Parse options and set defaults
-	loc required_version `required_version' // remove leading spaces
-	if ("`op'" == "=") loc op "==" // allow "=" instead of "=="
-	_assert inlist("`op'", ">=", "==", "")
-	loc has_requirements = ("`op'" != "")
-	loc can_install = ("`install'" != "")
 	if (inlist(`"`from'"', "SSC", "")) loc from ssc // Ensure SSC is default and there is only one variant
-
-	* Support for "require stata>=16"
-	if ("`package'"=="stata") {
-		version `required_version': qui
-		exit
-	}
-
-	* Intercept "require, debug": receive a string and parse it as a starbang line
-	if (`"`debug'"' != "") {
-		* Note: -debug- turns on -verbose- as well
-		loc verbose verbose
-		
-		* Note: we call GetFilename because inner_get_version behaves differently for .sthlp files
-		GetFilename `package' , adopath("`adopath'") `verbose' // outputs data in `filename'
-
-		mata: store_rc(inner_get_version(`"`debug'"', "`package'", "`filename'", "<fake-file>", "`verbose'"!="")) // write s()
-		RaiseMataError, rc(`rc') req("`required_version'")
-
-		if (`has_requirements') mata: store_rc(ensure_version("`required_version'", "`op'")) // reads s(), writes `rc'
-		RaiseMataError, rc(`rc') req("`required_version'")
-		
-		exit
-	}
 
 	* -adopath- accepts certain keywords (see "sysdir")
 	* - BASE is where the original official ado-files that were shipped with Stata and any updated official ado-files...
@@ -76,6 +44,59 @@ program require, sclass
 			di as error `"require: adopath() directory "`adopath'" not found"'
 			exit 692
 		}
+	}
+
+
+	* Intercept "require, debug": receive a string and parse it as a starbang line
+	if (`"`debug'"' != "") {
+		GetNextRequirement `requirement' // updates locals: `package' `op' `required_version' `rest'
+		loc has_requirements = ("`op'" != "")
+		_assert "`rest'"=="", msg(`"Extra text in requirement: "`rest'""')
+		* Note: -debug- turns on -verbose- as well
+		loc verbose verbose
+		
+		* Note: we call GetFilename because inner_get_version behaves differently for .sthlp files
+		GetFilename `package' , adopath("`adopath'") `verbose' // outputs data in `filename'
+
+		mata: store_rc(inner_get_version(`"`debug'"', "`package'", "`filename'", "<fake-file>", "`verbose'"!="")) // write s()
+		RaiseMataError, rc(`rc') req("`required_version'")
+
+		if (`has_requirements') mata: store_rc(ensure_version("`required_version'", "`op'")) // reads s(), writes `rc'
+		RaiseMataError, rc(`rc') req("`required_version'")
+		
+		exit
+	}
+
+
+	* Iterate over multiple requirements
+	loc rest `requirement'
+	while ("`rest'"!="") {
+		GetNextRequirement `rest'
+		*di as text `"package: [{res}`package'{txt}]"'
+		*di as text "op: [{res}`op'{txt}]"
+		*di as text "version: [{res}`required_version'{txt}]"
+		*di as text "rest=[{res}`rest'{txt}]"
+		*di
+		RequireOne, package(`package') op(`op') required_version(`required_version') ///
+			`install' adopath("`adopath'") from("`from'") `verbose' `strict'
+	}
+end
+
+
+program RequireOne
+	syntax, package(string) [op(string) required_version(string)] [INSTALL ADOPATH(string) FROM(string)] [DEBUG(string) VERBOSE STRICT]
+
+	_assert inlist("`op'", ">=", "==", "")
+	loc required_version `required_version' // remove leading spaces (we don't need this anymore?)
+	loc has_requirements = ("`op'" != "")
+	loc can_install = ("`install'" != "")
+	local requirement `package' `op' `required_version'
+	local requirement `requirement' // remove spaces
+
+	* Support for "require stata>=16"
+	if ("`package'"=="stata") {
+		version `required_version': qui
+		exit
 	}
 
 	* Which filename will we search? usually <package>.ado but there are exceptions...
@@ -103,7 +124,7 @@ program require, sclass
 		if (`can_install') {
 			cap // clear out error codes
 			Install `package', adopath(`adopath') from(`from')
-			require `requirement', adopath(`adopath') `verbose' `strict'
+			RequireOne, package(`package') op(`op') required_version(`required_version') adopath("`adopath'") `verbose' `strict'
 			exit
 		}
 		else {
@@ -145,7 +166,7 @@ program require, sclass
 	if (`rc') {
 		if (`can_install') {
 			Install `package', adopath(`adopath') from(`from')
-			require `requirement', adopath(`adopath') `verbose' `strict'
+			RequireOne, package(`package') op(`op') required_version(`required_version') adopath("`adopath'") `verbose' `strict'
 			exit
 		}
 		else {
@@ -161,13 +182,39 @@ program require, sclass
 	if (`rc') {
 		if (`can_install') {
 			Install `package', adopath(`adopath') from(`from')
-			require `requirement', adopath(`adopath') `verbose' `strict'
+			RequireOne, package(`package') op(`op') required_version(`required_version') adopath("`adopath'") `verbose' `strict'
 			exit
 		}
 		else {
 			RaiseMataError, rc(`rc') req("`required_version'")
 		}
 	}
+end
+
+
+program GetNextRequirement
+	* Extract package and minimum/required version names
+	gettoken package rest1: 0, parse(">= ")
+	gettoken op rest2: rest1, parse(">= ")
+	gettoken required_version rest3: rest2, parse(" ")
+
+	* allow "=" instead of "=="
+	if ("`op'" == "=") loc op "=="
+
+	if (inlist("`op'", "==", ">=")) {
+		local rest `rest3'
+	}
+	else {
+		local rest `rest1'
+		local op
+		local required_version
+	}
+
+	c_local package "`package'"
+	c_local op "`op'"
+	c_local required_version "`required_version'"
+	c_local rest "`rest'"
+
 end
 
 
@@ -204,12 +251,19 @@ end
 
 
 program Setup
-	syntax [using/]	, [adopath(string)] [replace save] [exact] [date] [stata] [adopath(string)]
-
+	syntax [using/]	, [adopath(string)] [replace save] [exact] [date] [stata]
 	if ("`adopath'" == "") loc adopath = c(sysdir_plus)
-	loc trk_file = "`adopath'" + "stata.trk" // c(dirsep) ?
-	confirm file "`trk_file'"
+	loc has_dirsep = inlist(substr("`adopath'", strlen("`adopath'"), 1), "\", "/")
+	loc dirsep = cond(`has_dirsep', "", c(dirsep))
+	loc trk_file = "`adopath'" + "`dirsep'" + "stata.trk"
+	cap confirm file "`trk_file'"
+	if (c(rc)) {
+		di as error "`adopath' is not a valid adopath; file stata.trk is missing"
+		exit 601
+	}
 
+	di as text "(listing installed packages based on file `trk_file')" _n
+	
 	* Default using
 	if ("`save'" != "" & "`using'" == "") {
 		loc using "requirements.txt"
