@@ -1,12 +1,17 @@
-*! version 1.3.1 19sep2023
+*! version 1.4.0 10apr2024
 
 program require, sclass
 	version 14
 
-	* Intercept "require [using], list"
+	* Intercept "require [using], [setup|list]"
+	cap syntax [using], setup [*]
+	if (!c(rc)) {
+		Setup `using', `options'
+		exit
+	}
 	cap syntax [using], list [*]
 	if (!c(rc)) {
-		List `0'
+		Setup `using', `options'
 		exit
 	}
 
@@ -23,11 +28,14 @@ program require, sclass
 	* Extract package and minimum/required version names
 	gettoken package _: requirement, parse(">= ")
 	gettoken op required_version: _, parse(">= ")
+
+	* Parse options and set defaults
 	loc required_version `required_version' // remove leading spaces
 	if ("`op'" == "=") loc op "==" // allow "=" instead of "=="
 	_assert inlist("`op'", ">=", "==", "")
 	loc has_requirements = ("`op'" != "")
 	loc can_install = ("`install'" != "")
+	if (inlist(`"`from'"', "SSC", "")) loc from ssc // Ensure SSC is default and there is only one variant
 
 	* Support for "require stata>=16"
 	if ("`package'"=="stata") {
@@ -70,7 +78,7 @@ program require, sclass
 		}
 	}
 
-	* Which filename will we search? usually package.ado but there are exceptions...
+	* Which filename will we search? usually <package>.ado but there are exceptions...
 	GetFilename `package' , adopath("`adopath'") `verbose' // outputs data in `filename'
 
 	* From this point onward, there are three possible errors that can trigger failed requirements:
@@ -89,8 +97,9 @@ program require, sclass
 
 	* Step A - Is the package/file already installed?
 	cap findfile `filename', path("`adopath'")
-
-	if (c(rc)) {
+	loc not_installed = c(rc)>0
+	
+	if (`not_installed') {
 		if (`can_install') {
 			cap // clear out error codes
 			Install `package', adopath(`adopath') from(`from')
@@ -98,14 +107,20 @@ program require, sclass
 			exit
 		}
 		else {
-			* Raise error if file doesn't exist and we are not installing
-			loc url `"https://github.com/search?q=`package'+language%3AStata+language%3AStata&type=repositories"'
-			*loc url `"https://github.com/search?q=filename:`package'.pkg"'
-			if (`"`adopath'"'=="") loc adopath adopath
-			di as error `"{bf:require}: package "{bf:`package'}" not found in `adopath'; suggestions:"'
-			di as error " - {stata ssc install `package':install from SSC}"
-			di as error " - {stata search `package':search online documentation}"
-			di as error `" - {browse "`url'":search on Github}"'
+			loc adopath_str = cond(`"`adopath'"'=="", "adopath", `"`adopath'"')
+			if ("`from'"!="ssc") {
+				loc cmd `"net install `package', from("`from'")"'
+				di as error `"{bf:require}: package "{bf:`package'}" not found in `adopath_str'; {stata `"`cmd'"':install from "`from'"}"'
+			}
+			else {
+				di as error `"{bf:require}: package "{bf:`package'}" not found in `adopath_str';"'
+				* Raise error if file doesn't exist and we are not installing
+				loc url `"https://github.com/search?q=`package'+language%3AStata+language%3AStata&type=repositories"'
+				*loc url `"https://github.com/search?q=filename:`package'.pkg"'
+				di as error " - {stata ssc install `package':install from SSC}"
+				di as error " - {stata search `package':search online documentation}"
+				di as error `" - {browse "`url'":search on Github}"'
+			}
 			sreturn clear
 			sreturn local package "`package'"
 			sreturn local filename "`filename'"
@@ -188,8 +203,8 @@ program RequireFile
 end
 
 
-program List
-	syntax [using/]	, list [adopath(string)] [replace save] [exact] [date] [stata] [adopath(string)]
+program Setup
+	syntax [using/]	, [adopath(string)] [replace save] [exact] [date] [stata] [adopath(string)]
 
 	if ("`adopath'" == "") loc adopath = c(sysdir_plus)
 	loc trk_file = "`adopath'" + "stata.trk" // c(dirsep) ?
@@ -301,7 +316,7 @@ program Install
 	*_assert c(rc), msg(`"Could not install, "`ado'" still exists"')
 
 	di as text "(installing `ado')"
-	if inlist(strlower("`from'"), "", "ssc") {
+	if ("`from'" =="ssc") {
 		ssc install `ado'
 	}
 	else {
@@ -635,7 +650,7 @@ real scalar inner_get_version(string scalar line, string scalar package, string 
 	SHORT_MON = "(0?[1-9]|1[012])"
 	DAY = "(0?[1-9]|[12][0-9]|3[01])"
 	AUTHOR_MID = "(?:[a-z@, ]{2,} )?" // most authors have 3+ letters but fsum has 2
-	EMAIL = "[a-z0-9._-]{3,}@[a-z]{3,}\.[a-z.]{3,} " // xyz@xyz.xyz
+	EMAIL = "[a-z0-9._+-]{3,}@(?:[a-z0-9][a-z0-9-]*\.)+[a-z.]{2,} " // xyz@xyz.xyz abc@xy.co.uk foo+xyz@gmail.com
 	AUTHOR_END = "(?:[a-z ]{2,}$)?"  // most authors have 3+ letters but fsum has 2
 
 	//NUM = "([0-9]+)"
