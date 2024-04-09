@@ -1,19 +1,22 @@
-noi cscript "require, list" adofile require
+noi cscript "require, setup" adofile require
 
 
 * ===========================================================================
-* Test "require, list" functionality
+* Test "require, setup" functionality
 * ===========================================================================
 
+	require, setup
+	require, list
 	require, list
 
 	require, list exact
-	require, list date
-	require, list stata
+	require, setup exact
+	require, setup date
+	require, setup stata
 
-	require, list save replace
-	require using ignore.txt, list replace stata exact
-	cap noi require using ignore.txt, list replace
+	require, setup save replace
+	require using ignore.txt, setup replace stata exact
+	cap noi require using ignore.txt, setup replace
 
 // --------------------------------------------------------------------------
 // Test with diff adopath
@@ -24,6 +27,7 @@ noi cscript "require, list" adofile require
 
 	require mdesc, install adopath("`adopath'")
 	require, list adopath("`adopath'")
+
 
 	di as text `""require, list" test completed successfully"'
 exit
