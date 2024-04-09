@@ -251,7 +251,7 @@ end
 
 
 program Setup
-	syntax [using/]	, [adopath(string)] [replace save] [exact] [date] [stata]
+	syntax [using/]	, [adopath(string)] [replace save] [exact MINimum] [date] [stata]
 	if ("`adopath'" == "") loc adopath = c(sysdir_plus)
 	loc has_dirsep = inlist(substr("`adopath'", strlen("`adopath'"), 1), "\", "/")
 	loc dirsep = cond(`has_dirsep', "", c(dirsep))
@@ -275,7 +275,8 @@ program Setup
 		di as text "`stata_line'"
 	}
 
-	loc symbol = cond("`exact'"=="", ">=", "==")
+	opts_exclusive "`exact' `minimum'"
+	loc symbol = cond("`minimum'"!="", ">=", "==")
 
 	loc header1 `"* Created on `c(current_date)' by `c(username)' @ `c(hostname)' on `c(os)'-`c(osdtl)'"'
 	loc header2 `"* Edit this file to remove redundant lines"'
