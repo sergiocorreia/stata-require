@@ -83,7 +83,7 @@ program require, sclass
 end
 
 
-program RequireOne
+program RequireOne, sclass
 	syntax, package(string) [op(string) required_version(string)] [INSTALL ADOPATH(string) FROM(string)] [DEBUG(string) VERBOSE STRICT]
 
 	_assert inlist("`op'", ">=", "==", "")
@@ -222,6 +222,7 @@ program RequireFile
 	* Process requirements.txt
 	syntax using, [ADOPATH(string) INSTALL STRICT]
 	tempname fh
+	loc missing_packages 0
 	file open `fh' `using', read
 	while 1 {
 		*display %4.0f `linenum' _asis `"  `macval(line)'"'
@@ -244,9 +245,15 @@ program RequireFile
 		if (`"`adopath_opt'`from_opt'`install'`strict'"'!="") loc comma ","
 		loc cmd `"require `ado_extra' `comma' `adopath_opt' `from_opt' `install' `strict'"'
 		di as text `"  ... `cmd'"' 
-		`cmd'
+		cap noi `cmd'
+		if (c(rc)) loc ++missing_packages
 	}
 	file close `fh'
+	
+	if (`missing_packages') {
+		di as error "{bf:require}: `missing_packages' packages are failing requirements"
+		exit 601
+	}
 end
 
 
