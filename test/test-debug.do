@@ -42,4 +42,10 @@ require egenmisc, debug(`"{* *! version 1.2.14  02feb2013}{...}"')
 require egenmisc==1.2.14, debug("{* *! version 1.2.14  02feb2013}{...}") // sthlp file
 assert s(version) == "1.2.14"
 
+* Parse email addresses
+require xyz, debug("*! version 1.0 example@example.com 09apr2024") verbose
+require xyz, debug("*! version 1.0 example@example.co.uk 09apr2024") verbose
+require xyz, debug("*! version 1.0 ex.ample@example.co.uk 09apr2024") verbose
+require xyz, debug("*! version 1.0 ex.ample+123@example.co.uk 09apr2024") verbose
+
 exit
