@@ -38,7 +38,12 @@ regex_stop = re.compile(r'^\s*[e]$')
 # - No files listed in pkg
 # - dynsimple: typo of dynsimpie; fixable
 # - x11as: malformed description in .pkg file
-invalid_packages = set(('_grminmax', 'aformat', '_gstd01', 'atkplot', 'calibr', 'dave', 'dynsimple', 'encode_label', 'estoutold', 'foobar', 'test1', 'x11as'))
+# - ad-src-package.pkg: not an actual package but a template file (part of the adodown package)
+invalid_packages = ['_grminmax', 'aformat', '_gstd01', 'atkplot', 'calibr', 'dave', 'dynsimple',
+                    'encode_label', 'estoutold', 'foobar', 'test1', 'x11as', 'ad-src-package']
+invalid_packages = set(invalid_packages)
+
+# Not removed:
 #, 'circularkde', 'codci')
 # - circularkde: circdex1.do instead of circkdex1.do; can be fixed
 # - codci: a dta is missing; can be fixed
@@ -187,7 +192,7 @@ def process_package(package_name, session, basepath, ssc_url, verbose=False):
         new_text = '\n'.join(new_text)
 
         # Save stata.toc to .zip
-        assert header is not None, package_name
+        assert header is not None, pkg_url
         zip_info = zipfile.ZipInfo('stata.toc')
         zip_info.compress_type = zipfile.ZIP_DEFLATED
         myzip.writestr(zip_info, header)
