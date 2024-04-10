@@ -1,5 +1,5 @@
 v 3
-d Sergio Correia. Board of Governors of the Federal Reserve System
+d Sergio Correia, Matthew P. Seay. Board of Governors of the Federal Reserve System
 p require REQUIRE - ensure that a package is installed; also ensure minimum version
 
 * l word-to-show path-or-url [description]

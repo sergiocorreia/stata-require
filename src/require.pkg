@@ -14,7 +14,7 @@ d KW: ssc
 d
 d Requires: Stata version 14.0
 d
-d Distribution-Date: 20230919
+d Distribution-Date: 20240410
 d
 
 f require.ado

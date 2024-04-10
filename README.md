@@ -12,6 +12,12 @@ Ensure all required Stata packages and their specific versions are installed; si
 
 ## Recent Updates
 
+- **version 1.4.0 10apr2024**:
+    - Multiple requirements can now be specified in the same line ("require reghdfe>=6 ftools>=2")
+    - `require using ...` will now list all failed requirements instead of just the first one.
+    - `require, list` renamed to `require, setup`
+    - `require, setup` now defaults to writing exact requirements ("reghdfe==1.2.3") instead of minimum requirements. Use the `minimum` option for minimum requirements ("reghdfe>=1.2.3")
+    - Misc bugfixes and minor improvements
 - **version 1.3.1 19sep2023**:
     - Misc. bugfixes.
     - Paper uploaded to [arXiv](https://arxiv.org/pdf/2309.11058.pdf).
@@ -22,6 +28,7 @@ Ensure all required Stata packages and their specific versions are installed; si
     - Added tests based on certification scripts.
 - **version 1.0.0 27jun2023**:
     - First stable release.
+
 
 ## Install
 
@@ -53,6 +60,13 @@ The most common usage is to use require to ensure that a minimum version is inst
 require ivreg2 >= 4.1.0
 require ftools >= 2.48.0
 require reghdfe>= 6.12.1
+```
+
+Or equivalently,
+
+
+```stata
+require ivreg2 >= 4.1.0  ftools >= 2.48.0  reghdfe>= 6.12.1
 ```
 
 This will ensure that whoever runs the do-file is not using an outdated version of user packages.
@@ -117,7 +131,7 @@ We also encourage users to manage their folders with the [`setroot`](https://git
 
 ## Coverage of user packages from SSC
 
-As discussed in our [accompanying paper](https://arxiv.org/pdf/2309.11058.pdf), one of our key goals was to succesfully match as many user-contributed as possible, particularly those user widely by researchers. Figure 2 from the paper (below) illustrates the package performance as of version 1.1.
+As discussed in our [accompanying paper](https://arxiv.org/pdf/2309.11058.pdf), one of our key goals was to successfully match as many user-contributed as possible, particularly those user widely by researchers. Figure 2 from the paper (below) illustrates the package performance as of version 1.1.
 
 ![performance](benchmark/performance.png)
 
