@@ -52,6 +52,13 @@ cap ado uninstall require
 net install require, from("c:\git\stata-require\src")
 ```
 
+Alternatively, the lines below will install the package only if needed:
+
+```stata
+cap which require
+if (c(rc)) net install require, from("https://raw.githubusercontent.com/sergiocorreia/stata-require/master/src/")
+```
+
 ## Usage
 
 The most common usage is to use require to ensure that a minimum version is installed:
